@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+<head>
+    <title>Sauvie Wind Data</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript">
+    </script>
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" language="javascript">
+        // start FastAPI servr
+        //    uvicorn script:app --reload
+        var chart2;
+        var latestTime = new Date(0);    // Time of most recent report
+
+       const apiUrl = 'http://127.0.0.1:8000';
+        // const apiUrl = 'http://192.168.68.114:8000';
+
+        function testapi() {
+            // Define the API URL
+
+            // Make a GET request
+            fetch(apiUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+
+                    test_json = JSON.parse(data);
+
+                    var dirfixed = test_json.dir.map(northCenter);
+
+                    chart2.data.datasets[0].data = dirfixed;
+                    chart2.data.datasets[1].data = test_json.avg;
+                    chart2.data.datasets[2].data = test_json.gust;
+                    chart2.data.datasets[3].data = test_json.lull;
+                    chart2.data.labels = test_json.time;
+                    chart2.update();
+
+
+                    console.log(test_json.time);
+                    console.log(test_json.avg);
+                    console.log(test_json.gust);
+                    console.log(test_json.lull);
+                    console.log(dirfixed);
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+
+        }
+
+        // Convert a 0-360 degree direction to a compass point and degrees from it
+        function directionString(direction) {
+            const dir_dict = {
+                0: "N",
+                1: "NE",
+                2: "E",
+                3: "SE",
+                4: "S",
+                5: "SW",
+                6: "W",
+                7: "NW"
+            }
+            var dir_num = Number(direction);
+            var dir_index = Math.floor(((dir_num + 22) % 360) / 45);
+            var rem = (dir_num - dir_index * 45);
+            rem = (rem > 23) ? rem - 360 : rem;
+            return dir_dict[dir_index] + " " + "<small>" + (rem < 0 ? ' ' : '+') + rem + "&#176</small>";
+        }
+
+        // Hack to make degree data fit into windspeed data, North is center of chart
+        function northCenter(degrees) {
+            return ((degrees + 180) % 360) / 9;
+        }
+
+        function timeString(time24) {
+            if (time24 == 0)
+                return "12am";
+            else if (time24 == 12)
+                return "12pm";
+            else if (time24 < 12)
+                return time24.toString() + "am";
+            else
+                return (time24 - 12).toString() + "pm"
+        }
+
+
+    </script>
+</head>
+
+<body>
+    <div class="w3-container w3-indigo">
+        <h1>SAUVIE ISLAND WIND</h1>
+    </div>
+    <div class="w3-container w3-indigo">
+        <h1>The sensor is down for the season, but will be back in the spring.</h1>
+    </div>
+    <div class="w3-panel w3-pale-blue">
+        <div id="recent-wind"></div>
+    </div>
+
+    <div class="w3-panel w3-pale-blue" style="direction: rtl; overflow-x: auto; overflow-y: hidden;">
+        <div style="width:3000px; height: 500px">
+            <canvas id="myChart2" height="500" width="0"></canvas>
+        </div>
+    </div>
+
+    <div class="w3-panel w3-pale-blue">
+        <p> The blue line is the direction. North is at the center of the chart.
+            Updates occur every 5 minutes from 10AM to 9PM if it is windy. Otherwise it is only updated on the hour.
+            The sensor will be taken down in September for improvements and will return in May.</p>
+    </div>
+
+    <div class="w3-panel w3-pale-blue">
+        <p style="font-size:150%; text-align: center;">
+            If you would like make a donation to help pay for the hardware and recurring costs,
+            please click the donate button.</p>
+        <form action="https://www.paypal.com/donate" method="post" target="_top">
+            <input type="hidden" name="business" value="25GJHM2LDXKG2" />
+            <input type="hidden" name="no_recurring" value="1" />
+            <input type="hidden" name="item_name" value="Help cover costs for the Sauvie Wind Sensor." />
+            <input type="hidden" name="currency_code" value="USD" />
+            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0"
+                name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+            <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+        </form>
+    </div>
+
+    <!-- <div class="w3-panel w3-pale-blue">
+        <div id="devInfo"></div>
+        </div>
+        -->
+
+        <img src="src/temp.jpg" alt="Description of image">
+   
+    <script>
+
+
+        chart2 = new Chart("myChart2", {
+            type: "line",
+            data: {
+                datasets: [{
+                    label: "Direction (North at middle)",
+                    pointRadius: 1,
+                    pointBackgroundColor: "rgb(0,0,255)",
+                    borderColor: "blue",
+                    fill: false,
+                    borderWidth: -1
+                }, {
+                    label: "Wind Speed",
+                    pointRadius: 1,
+                    pointBackgroundColor: "rgb(0,0,255)",
+                    borderColor: "green",
+                    borderWidth: 4,
+                    fill: false,
+                }, {
+                    label: "Gusts",
+                    pointRadius: 2,
+                    pointBackgroundColor: "rgb(255,0,0)",
+                    borderColor: "red",
+                    fill: false,
+                    borderWidth: -1
+                }, {
+                    label: "Lulls",
+                    pointRadius: 3,
+                    pointBackgroundColor: "rgb(255,0,0)",
+                    borderColor: "black",
+                    fill: '-1',
+                    borderWidth: -1
+                },
+                ]
+            },
+            options: {
+                legend: { display: true },
+
+                scales: {
+                    xAxes: [{ ticks: { min: 40, max: 290 } }],
+                    yAxes: [{
+                        position: 'right',
+                        ticks: {
+                            fontSize: 25,
+                            min: 0,
+                            max: 40,
+                        }
+                    },
+                    {
+                        position: 'right',
+                        ticks: {
+                            fontColor: 'blue',
+                            fontSize: 25,
+                            min: 0, max: 8, callback: function (value) {
+                                var x = ["S", "SW", "W", "NW", "N", "NE", "E", "SE", "S"];
+                                return x[value % x.length];
+
+                            }
+                        }
+                    }],
+                }
+            }
+        });
+        testapi();
+
+    </script>
+</body>
+
+</html>

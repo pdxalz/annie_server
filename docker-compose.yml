@@ -1,0 +1,12 @@
+version: '3.4'
+
+services:
+  annieapi:
+    image: annieapi
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./src:/dbase
+    ports:
+      - 8000:8000
