@@ -14,8 +14,9 @@
         var chart2;
         var latestTime = new Date(0);    // Time of most recent report
 
-       const apiUrl = 'http://127.0.0.1:8000';
-        // const apiUrl = 'http://192.168.68.114:8000';
+        //const apiUrl = 'http://127.0.0.1:8000';
+        const apiUrl = 'http://192.168.68.113:8000/wind';
+        const apiImage = 'http://192.168.68.113:8000/get_image';
 
         function testapi() {
             // Define the API URL
@@ -137,10 +138,11 @@
         </div>
         -->
 
-        <img src="src/temp.jpg" alt="Description of image">
+        <img id="windpict" alt="Description of image">
    
     <script>
 
+        document.getElementById("windpict").src = apiImage;
 
         chart2 = new Chart("myChart2", {
             type: "line",

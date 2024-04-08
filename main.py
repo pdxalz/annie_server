@@ -1,15 +1,19 @@
 #  docker-compose up
 #   (cd to Desktop/annie_api/)
 #  docker build . -t anniem
-#  docker run --rm -v$PWD/src:/dbase -p 8000:8000/tcp anniem:latest
+#  docker run --rm --volume $PWD/winddata:/winddata -p 8000:8000/tcp anniem:latest
 
 #  docker ps -a
+#   docker system prune -a      (wipe out all data)
+#   sudo find / -name test.db   (find the location of the database)
+
 
 import sqlite3
 import json
 import datetime
 import paho.mqtt.client as mqtt
 import os
+import pathlib
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,8 +24,9 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 from email.mime.text import MIMEText
+from fastapi.staticfiles import StaticFiles
 
-
+from starlette.responses import FileResponse 
 
 
 
@@ -36,10 +41,12 @@ TOPIC_WIND = 'zimbuktu/wind'
 TOPIC_JPG_START = 'zimbuktu/jpgStart'
 TOPIC_JPG_END = 'zimbuktu/jpgEnd'
 TOPIC_JPG_DATA = 'zimbuktu/jpgData'
-TMPJPGFILE = "../dbase/temp.jpg"
+INDEX_HTML_PATH = 'web_assets/index.html'
+
+DATABASE = "/winddata/test.db" 
+TMPJPGFILE = "/winddata/temp.jpg"
 
 app = FastAPI()
-database = "../dbase/test.db" 
 
 origins = [
     'null',
@@ -49,7 +56,7 @@ origins = [
     # "http://localhost:8000",
 ]
 
-
+# needed for CORS, gives error when accessing from server hosting the api
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -60,9 +67,9 @@ app.add_middleware(
 )
 
 
-@app.get("/")
+@app.get("/wind")
 def root():
-    conn = sqlite3.connect(database)
+    conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
     windy = cursor.execute("SELECT * FROM wind")
 
@@ -89,6 +96,18 @@ def root():
     conn.close()
 
     return json.dumps(dict)
+
+@app.get("/get_image")
+async def get_image():
+    if os.path.exists(TMPJPGFILE):
+        return FileResponse(TMPJPGFILE)
+    return FileResponse('web_assets/404.jpg')
+
+@app.get("/")
+async def read_index():
+    return FileResponse(INDEX_HTML_PATH)
+
+
 
 
 def addtm(min : int) : 
@@ -118,7 +137,7 @@ def on_message(client, userdata, message):
 
 
         val = (jd["t"], jd["d"], jd["a"], jd["g"], jd["l"])
-        conn = sqlite3.connect(database)
+        conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
 
         cursor.execute('''INSERT INTO wind (time, dir, avg, gust, lull) VALUES (?, ?, ?, ?, ?)
@@ -131,7 +150,7 @@ def on_message(client, userdata, message):
         if os.path.exists(TMPJPGFILE):
             os.remove(TMPJPGFILE)
     elif (message.topic == TOPIC_JPG_END):
-        print('End image')
+        print('\nEnd image')
         # sender_email = "pdxalz@gmail.com"
         # sender_password = "xuoq euxb lnzt qomz "
         # receiver_email = "pdxalz@gmail.com"
@@ -144,7 +163,7 @@ def on_message(client, userdata, message):
         image_file = open(TMPJPGFILE, 'ab')
         image_file.write(message.payload)
         image_file.close()
-
+        print('.', end='', flush=True)
     else:
         print(message.payload)
             
@@ -218,7 +237,7 @@ def send_email(sender_email, sender_password, receiver_email, subject, body, att
 
 
 
-conn = sqlite3.connect(database)
+conn = sqlite3.connect(DATABASE)
 
 cursor = conn.cursor()
 
