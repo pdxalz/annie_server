@@ -14,9 +14,10 @@
         var chart2;
         var latestTime = new Date(0);    // Time of most recent report
 
-        //const apiUrl = 'http://127.0.0.1:8000';
-        const apiUrl = 'http://192.168.68.113:8000/wind';
-        const apiImage = 'http://192.168.68.113:8000/get_image';
+        // const serverUrl = 'http://192.168.68.113:8000';
+        const serverUrl = '__SERVER_URL__';
+        const apiUrl = serverUrl + '/wind';
+        const apiImage = serverUrl + '/get_image';
 
         function testapi() {
             // Define the API URL

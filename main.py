@@ -2,7 +2,7 @@
 #   (cd to Desktop/annie_api/)
 #  docker build . -t anniem
 #  docker run --rm --volume $PWD/winddata:/winddata -p 8000:8000/tcp anniem:latest
-
+#  docker run --rm --volume $PWD/winddata:/winddata -p 8000:8000/tcp -e SERVER_URL=http://192.168.68.113:8000 anniem
 #  docker ps -a
 #   docker system prune -a      (wipe out all data)
 #   sudo find / -name test.db   (find the location of the database)
