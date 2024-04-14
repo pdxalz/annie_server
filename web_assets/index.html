@@ -16,6 +16,7 @@
 
         // const serverUrl = 'http://192.168.68.113:8000';
         const serverUrl = '__SERVER_URL__';
+        
         const apiUrl = serverUrl + '/wind';
         const apiImage = serverUrl + '/get_image';
 
@@ -96,12 +97,12 @@
     </script>
 </head>
 
-<body>
-    <div class="w3-container w3-indigo">
+<body class="w3-mobile">
+    <div class="w3-container w3-indigo w3-rest">
         <h1>SAUVIE ISLAND WIND</h1>
     </div>
     <div class="w3-container w3-indigo">
-        <h1>The sensor is down for the season, but will be back in the spring.</h1>
+        <h2>Sensor in testing</h2>
     </div>
     <div class="w3-panel w3-pale-blue">
         <div id="recent-wind"></div>
@@ -138,8 +139,9 @@
         <div id="devInfo"></div>
         </div>
         -->
-
+    <div class="w3-panel img-div">
         <img id="windpict" alt="Description of image">
+    </div>
    
     <script>
 

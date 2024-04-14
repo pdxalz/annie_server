@@ -16,6 +16,9 @@ h2{
     font-weight: bold;
 }
 
+div{
+    width: 100%;
+}
 
 p{
     font-size:2em;
@@ -23,4 +26,16 @@ p{
 
 form {
     text-align: center
-  }
+}
+
+.img-div{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+img{
+    width: 100%;
+}
+
