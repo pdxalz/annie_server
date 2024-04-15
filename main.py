@@ -14,6 +14,7 @@ import datetime
 import paho.mqtt.client as mqtt
 import os
 import pathlib
+import pytz
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,7 +28,7 @@ from email.mime.text import MIMEText
 from fastapi.staticfiles import StaticFiles
 
 from starlette.responses import FileResponse 
-
+from datetime import datetime
 
 
 
@@ -80,7 +81,7 @@ def root():
     ll=[]
 
     for row in windy:
-        ti.append(row[0])
+        ti.append(utc_to_pst(row[0]))
         di.append(row[1])
         av.append(row[2])
         gu.append(row[3])
@@ -109,10 +110,13 @@ async def read_index():
 
 
 
-
-def addtm(min : int) : 
-    return datetime.datetime.now() + datetime.timedelta(minutes = min)
-
+def utc_to_pst(utc_time):
+    utc_tz = pytz.timezone('UTC')
+    pst_tz = pytz.timezone('America/Los_Angeles')
+    utc_time_naive = datetime.strptime(utc_time, "%m/%d/%y %H:%M")
+    utc_time = utc_tz.localize(utc_time_naive)
+    pst_time = utc_time.astimezone(pst_tz)
+    return pst_time.strftime("%I:%M%p")
 
 
 def on_connect(client, userdata, flags, rc):
