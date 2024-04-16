@@ -18,6 +18,7 @@
         // const serverUrl = 'http://192.168.68.113:8000';
         const serverUrl = '__SERVER_URL__';
         
+        // const apiUrl = serverUrl + '/wind?day=2024-04-16';
         const apiUrl = serverUrl + '/wind';
         const apiImage = serverUrl + '/get_image';
 
@@ -113,8 +114,6 @@
                "<h2>" + json_data.avg[json_data.avg.length-1] + "(g" +json_data.gust[json_data.gust.length-1] + ")<small>mph</small>  "  +directionString(json_data.dir[json_data.dir.length-1]) + "</br><small>"  + json_data.time[json_data.time.length-1]  + "</small></h2><br>";
            
         }
-
-
     </script>
 </head>
 
