@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
 <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 
 <head>
     <title>Sauvie Wind Data</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript">
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
     <script type="text/javascript" language="javascript">
         // start FastAPI servr
@@ -20,7 +21,7 @@
         const apiUrl = serverUrl + '/wind';
         const apiImage = serverUrl + '/get_image';
 
-        function testapi() {
+        function getData() {
             // Define the API URL
 
             // Make a GET request
@@ -51,6 +52,8 @@
                     console.log(test_json.lull);
                     console.log(dirfixed);
                     console.log(data);
+
+                    updateLatestsStats(test_json)
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -59,7 +62,7 @@
         }
 
         // Convert a 0-360 degree direction to a compass point and degrees from it
-        function directionString(direction) {
+        function directionString(direction,simple=true) {
             const dir_dict = {
                 0: "N",
                 1: "NE",
@@ -74,7 +77,15 @@
             var dir_index = Math.floor(((dir_num + 22) % 360) / 45);
             var rem = (dir_num - dir_index * 45);
             rem = (rem > 23) ? rem - 360 : rem;
-            return dir_dict[dir_index] + " " + "<small>" + (rem < 0 ? ' ' : '+') + rem + "&#176</small>";
+            var simpleResult = dir_dict[dir_index];
+
+            var res
+            if (simple){
+                res = simpleResult;
+            } else {
+                res = simpleResult + " " + "<small>" + (rem < 0 ? ' ' : '+') + rem + "&#176</small>"
+            }
+            return res;
         }
 
         // Hack to make degree data fit into windspeed data, North is center of chart
@@ -93,6 +104,16 @@
                 return (time24 - 12).toString() + "pm"
         }
 
+        //Parse out the latest wind stats and update the HTML
+        function updateLatestsStats(json_data){
+ 
+            var latestDiv = document.getElementById("latest-stats");
+        
+            latestDiv.innerHTML =
+               "<h2>" + json_data.avg[json_data.avg.length-1] + "(g" +json_data.gust[json_data.gust.length-1] + ")<small>mph</small>  "  +directionString(json_data.dir[json_data.dir.length-1]) + "</br><small>"  + json_data.time[json_data.time.length-1]  + "</small></h2><br>";
+           
+        }
+
 
     </script>
 </head>
@@ -100,12 +121,11 @@
 <body class="w3-mobile">
     <div class="w3-container w3-indigo w3-rest">
         <h1>SAUVIE ISLAND WIND</h1>
-    </div>
-    <div class="w3-container w3-indigo">
         <h2>Sensor in testing</h2>
     </div>
+   
     <div class="w3-panel w3-pale-blue">
-        <div id="recent-wind"></div>
+        <div id="latest-stats"></div>
     </div>
 
     <div class="w3-panel w3-pale-blue" style="direction: rtl; overflow-x: auto; overflow-y: hidden;">
@@ -147,7 +167,9 @@
 
         document.getElementById("windpict").src = apiImage;
 
-        chart2 = new Chart("myChart2", {
+        const ctx = document.getElementById('myChart2');
+
+        chart2 = new Chart(ctx, {
             type: "line",
             data: {
                 datasets: [{
@@ -156,7 +178,7 @@
                     pointBackgroundColor: "rgb(0,0,255)",
                     borderColor: "blue",
                     fill: false,
-                    borderWidth: -1
+                    borderWidth: 4,
                 }, {
                     label: "Wind Speed",
                     pointRadius: 1,
@@ -164,52 +186,78 @@
                     borderColor: "green",
                     borderWidth: 4,
                     fill: false,
+                    yAxisID: 'speed'
                 }, {
                     label: "Gusts",
-                    pointRadius: 2,
+                    pointRadius: 1,
                     pointBackgroundColor: "rgb(255,0,0)",
                     borderColor: "red",
                     fill: false,
-                    borderWidth: -1
+                    borderWidth: 1,
+                    yAxisID: 'speed'
                 }, {
                     label: "Lulls",
-                    pointRadius: 3,
+                    pointRadius: 1,
                     pointBackgroundColor: "rgb(255,0,0)",
                     borderColor: "black",
                     fill: '-1',
-                    borderWidth: -1
+                    borderWidth: 1,
+                    yAxisID: 'speed'
                 },
                 ]
             },
             options: {
-                legend: { display: true },
-
+                plugins: {
+                    //coming soon ..
+                    title: {
+                    display: false,
+                    text: 'Custom Chart Title',
+                    position: 'top',
+                    align: 'end'
+                    }
+                },
+                legend: {   
+                    display: true,
+                    align: "left",
+                    lineWidth: 200
+                },
                 scales: {
-                    xAxes: [{ ticks: { min: 40, max: 290 } }],
-                    yAxes: [{
-                        position: 'right',
-                        ticks: {
-                            fontSize: 25,
-                            min: 0,
-                            max: 40,
-                        }
+                    x:{
+                        min:40,
+                        max:290
                     },
-                    {
+                    speed:{
                         position: 'right',
-                        ticks: {
-                            fontColor: 'blue',
-                            fontSize: 25,
-                            min: 0, max: 8, callback: function (value) {
-                                var x = ["S", "SW", "W", "NW", "N", "NE", "E", "SE", "S"];
-                                return x[value % x.length];
-
+                        min: 0, 
+                        max:40,
+                        ticks:{      
+                            color: 'gray',
+                            font:{
+                                weight: 'bold',
+                                size:20
                             }
                         }
-                    }],
+                    },
+                    direction:{
+                        position: 'right',
+                        min: 0,
+                        max: 8,
+                        ticks: {
+                            callback: function(value, index, ticks) {
+                                var x = ["S", "SW", "W", "NW", "N", "NE", "E", "SE", "S"];
+                                return x[value % x.length];
+                            },
+                            color: 'blue',
+                            font:{
+                                weight: 'bold',
+                                size: 20
+                            },
+                        }
+                    }
                 }
             }
         });
-        testapi();
+        getData();
 
     </script>
 </body>
