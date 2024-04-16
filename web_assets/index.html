@@ -17,6 +17,7 @@
 
         // const serverUrl = 'http://192.168.68.113:8000';
         const serverUrl = '__SERVER_URL__';
+        //const serverUrl = 'http://107.174.172.150';
         
         // const apiUrl = serverUrl + '/wind?day=2024-04-16';
         const apiUrl = serverUrl + '/wind';
@@ -178,6 +179,7 @@
                     borderColor: "blue",
                     fill: false,
                     borderWidth: 4,
+                    tension: 0.3
                 }, {
                     label: "Wind Speed",
                     pointRadius: 1,
@@ -185,7 +187,8 @@
                     borderColor: "green",
                     borderWidth: 4,
                     fill: false,
-                    yAxisID: 'speed'
+                    yAxisID: 'speed',
+                    tension: 0.3
                 }, {
                     label: "Gusts",
                     pointRadius: 1,
@@ -193,7 +196,8 @@
                     borderColor: "red",
                     fill: false,
                     borderWidth: 1,
-                    yAxisID: 'speed'
+                    yAxisID: 'speed',
+                    tension: 0.3
                 }, {
                     label: "Lulls",
                     pointRadius: 1,
@@ -201,7 +205,8 @@
                     borderColor: "black",
                     fill: '-1',
                     borderWidth: 1,
-                    yAxisID: 'speed'
+                    yAxisID: 'speed',
+                    tension: 0.3
                 },
                 ]
             },
@@ -221,10 +226,7 @@
                     lineWidth: 200
                 },
                 scales: {
-                    x:{
-                        min:40,
-                        max:290
-                    },
+                    
                     speed:{
                         position: 'right',
                         min: 0, 
