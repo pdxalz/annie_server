@@ -123,6 +123,26 @@ def root(day: Optional[str] = None):
 
     return json.dumps(dict)
 
+@app.get("/first_date")
+def get_first_date():
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+
+    # Execute the query
+    cursor.execute('SELECT date(time) FROM wind ORDER BY time ASC LIMIT 1')
+
+    # Fetch the result
+    result = cursor.fetchone()
+
+    # Close the connection
+    conn.close()
+
+    # Return the result
+    if result is not None:
+        return {"first_date": result[0]}
+    else:
+        return {"error": "No data found"}
+    
 @app.get("/get_image")
 async def get_image():
     if os.path.exists(TMPJPGFILE):
