@@ -67,6 +67,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/web_assets", StaticFiles(directory="web_assets"), name="web_assets")
 
 @app.get("/wind")
 def root(day: Optional[str] = None):
