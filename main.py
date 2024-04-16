@@ -29,7 +29,7 @@ from fastapi.staticfiles import StaticFiles
 
 from starlette.responses import FileResponse 
 from datetime import datetime
-
+from typing import Optional
 
 
 
@@ -69,10 +69,35 @@ app.add_middleware(
 
 
 @app.get("/wind")
-def root():
+def root(day: Optional[str] = None):
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
-    windy = cursor.execute("SELECT * FROM wind")
+
+    if day is not None:
+        # print('day' + day)
+        # # Convert the day to a datetime object
+        # day_obj = datetime.strptime(day, "'%Y-%m-%d'")
+        # print('day_obj1' + str(day_obj))
+
+        # # Assume the day is in PST
+        # pst_tz = pytz.timezone('America/Los_Angeles')
+        # day_obj = pst_tz.localize(day_obj)
+        # print('day_obj2' + str(day_obj))
+
+        # # Convert the day to UTC
+        # utc_tz = pytz.timezone('UTC')
+        # day_obj = day_obj.astimezone(utc_tz)
+        # print('day_obj3' + str(day_obj))
+
+        # # Format the day in the format expected by SQLite
+        # day_str = day_obj.strftime("%Y-%m-%d")
+        # print('day_str' + day_str)
+
+        # Select only rows from the specified day
+        windy = cursor.execute("SELECT * FROM wind WHERE date(time) = ?", (day,))
+    else:
+        # If no day is specified, select all rows
+        windy = cursor.execute("SELECT * FROM wind")
 
     ti=[]
     di=[]
@@ -113,11 +138,18 @@ async def read_index():
 def utc_to_pst(utc_time):
     utc_tz = pytz.timezone('UTC')
     pst_tz = pytz.timezone('America/Los_Angeles')
-    utc_time_naive = datetime.strptime(utc_time, "%m/%d/%y %H:%M")
+    utc_time_naive = datetime.strptime(utc_time, "%Y-%m-%d %H:%M")
     utc_time = utc_tz.localize(utc_time_naive)
     pst_time = utc_time.astimezone(pst_tz)
     return pst_time.strftime("%I:%M%p")
 
+def pst_to_utc(pst_time):
+    pst_tz = pytz.timezone('America/Los_Angeles')
+    utc_tz = pytz.timezone('UTC')
+    pst_time_naive = datetime.strptime(pst_time, "%Y-%m-%d %H:%M")
+    pst_time = pst_tz.localize(pst_time_naive)
+    utc_time = pst_time.astimezone(utc_tz)
+    return utc_time.strftime("%Y-%m-%d %H:%M")
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -144,11 +176,22 @@ def on_message(client, userdata, message):
         conn = sqlite3.connect(DATABASE)
         cursor = conn.cursor()
 
+        val = (jd["t"], jd["d"], jd["a"], jd["g"], jd["l"])
+        conn = sqlite3.connect(DATABASE)
+        cursor = conn.cursor()
+
+        # Convert the time to the desired format and adjust the timezone from UTC to PST
+        time_obj = datetime.strptime(jd["t"], "%m/%d/%y %H:%M")
+        pst_tz = pytz.timezone('America/Los_Angeles')
+        time_obj = time_obj.replace(tzinfo=pytz.utc).astimezone(pst_tz)
+        time_str = time_obj.strftime("%Y-%m-%d %H:%M")
+
         cursor.execute('''INSERT INTO wind (time, dir, avg, gust, lull) VALUES (?, ?, ?, ?, ?)
-                        ''', val)
+                        ''', (time_str, jd["d"], jd["a"], jd["g"], jd["l"]))
         conn.commit()
         cursor.close()
         conn.close()
+
     elif (message.topic == TOPIC_JPG_START):
         print('Start Image')
         if os.path.exists(TMPJPGFILE):
