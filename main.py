@@ -2,7 +2,7 @@
 #   (cd to Desktop/annie_api/)
 #  docker build . -t anniem
 #  docker run --rm --volume $PWD/winddata:/winddata -p 8000:8000/tcp anniem:latest
-#  docker run --rm --volume $PWD/winddata:/winddata -p 8000:8000/tcp -e SERVER_URL=http://192.168.68.113:8000 anniem
+#  docker run --rm --volume $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.113 anniem
 #  docker ps -a
 #   docker system prune -a      (wipe out all data)
 #   sudo find / -name test.db   (find the location of the database)
@@ -106,7 +106,7 @@ def root(day: Optional[str] = None):
     ll=[]
 
     for row in windy:
-        ti.append(utc_to_pst(row[0]))
+        ti.append(hours_minutes(row[0]))
         di.append(row[1])
         av.append(row[2])
         gu.append(row[3])
@@ -135,13 +135,9 @@ async def read_index():
 
 
 
-def utc_to_pst(utc_time):
-    utc_tz = pytz.timezone('UTC')
-    pst_tz = pytz.timezone('America/Los_Angeles')
-    utc_time_naive = datetime.strptime(utc_time, "%Y-%m-%d %H:%M")
-    utc_time = utc_tz.localize(utc_time_naive)
-    pst_time = utc_time.astimezone(pst_tz)
-    return pst_time.strftime("%I:%M%p")
+def hours_minutes(time_str):
+    datetime_obj = datetime.strptime(time_str, "%Y-%m-%d %H:%M")
+    return datetime_obj.strftime("%H:%M")
 
 def pst_to_utc(pst_time):
     pst_tz = pytz.timezone('America/Los_Angeles')
