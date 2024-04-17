@@ -70,6 +70,12 @@ app.add_middleware(
 )
 
 app.mount("/web_assets", StaticFiles(directory="web_assets"), name="web_assets")
+app.mount("/images", StaticFiles(directory="winddata/images"), name="images")
+
+@app.get("/list_images")
+def list_files():
+    files = os.listdir('winddata/images')
+    return {"files": files}
 
 @app.get("/wind")
 def root(day: Optional[str] = None):
