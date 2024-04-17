@@ -1,7 +1,6 @@
 #  docker-compose up
 #   (cd to Desktop/annie_api/)
 #  docker build . -t anniem
-#  docker run --rm --volume $PWD/winddata:/winddata -p 8000:8000/tcp anniem:latest
 #  docker run --rm --volume $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.113 anniem
 #  docker ps -a
 #   docker system prune -a      (wipe out all data)
@@ -15,10 +14,11 @@ import paho.mqtt.client as mqtt
 import os
 import pathlib
 import pytz
+import shutil
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from pytz import timezone
 
 import smtplib
 from email.mime.multipart import MIMEMultipart
@@ -46,7 +46,9 @@ INDEX_HTML_PATH = 'web_assets/index.html'
 
 DATABASE = "/winddata/test.db" 
 TMPJPGFILE = "/winddata/temp.jpg"
+IMAGE_PATH = "/winddata/images/"
 
+last_image_date = 'No Images'
 app = FastAPI()
 
 origins = [
@@ -150,6 +152,11 @@ async def get_image():
         return FileResponse(TMPJPGFILE)
     return FileResponse('web_assets/404.jpg')
 
+@app.get("/image_date")
+async def get_image_date():
+    global last_image_date
+    return {"first_date": last_image_date}
+
 @app.get("/")
 async def read_index():
     return FileResponse(INDEX_HTML_PATH)
@@ -214,15 +221,14 @@ def on_message(client, userdata, message):
         if os.path.exists(TMPJPGFILE):
             os.remove(TMPJPGFILE)
     elif (message.topic == TOPIC_JPG_END):
+        global last_image_date
         print('\nEnd image')
-        # sender_email = "pdxalz@gmail.com"
-        # sender_password = "xuoq euxb lnzt qomz "
-        # receiver_email = "pdxalz@gmail.com"
-        # subject = "Email with attachment"
-        # body = "Please find the attached file."
-        # attachment_path = TMPJPGFILE
-        # print('Send mail')
-        # send_email(sender_email, sender_password, receiver_email, subject, body, attachment_path)
+        last_image_date = datetime.now(timezone('US/Pacific')).strftime("%m/%d %I:%M%p")
+        filename = IMAGE_PATH + datetime.now(timezone('US/Pacific')).strftime("%m_%d_%H_%M") + ".jpg"
+        print("copying " + TMPJPGFILE + " to " + filename)
+        # Copy TMPJPGFILE to filename
+        shutil.copy2(TMPJPGFILE, filename)
+
     elif (message.topic == TOPIC_JPG_DATA):
         image_file = open(TMPJPGFILE, 'ab')
         image_file.write(message.payload)
