@@ -36,17 +36,20 @@ from typing import Optional
 
 
 
-
+# MQTT topics
 TOPIC_ALL = 'zimbuktu/#'
 TOPIC_WIND = 'zimbuktu/wind'
 TOPIC_JPG_START = 'zimbuktu/jpgStart'
 TOPIC_JPG_END = 'zimbuktu/jpgEnd'
 TOPIC_JPG_DATA = 'zimbuktu/jpgData'
+
+#Paths to static html related files, copied when server starts
 INDEX_HTML_PATH = 'web_assets/index.html'
 
+#Paths to non-voliatile data, they exist outside of docker container
 DATABASE = "/winddata/test.db" 
 TMPJPGFILE = "/winddata/temp.jpg"
-IMAGE_PATH = "/winddata/images/"
+IMAGE_PATH = "/winddata/images"
 
 last_image_date = 'No Images'
 app = FastAPI()
@@ -70,11 +73,11 @@ app.add_middleware(
 )
 
 app.mount("/web_assets", StaticFiles(directory="web_assets"), name="web_assets")
-app.mount("/images", StaticFiles(directory="winddata/images"), name="images")
+app.mount("/images", StaticFiles(directory=IMAGE_PATH), name="images")
 
 @app.get("/list_images")
 def list_files():
-    files = os.listdir('winddata/images')
+    files = sorted(os.listdir(IMAGE_PATH),reverse=True)
     return {"files": files}
 
 @app.get("/wind")
@@ -83,25 +86,6 @@ def root(day: Optional[str] = None):
     cursor = conn.cursor()
 
     if day is not None:
-        # print('day' + day)
-        # # Convert the day to a datetime object
-        # day_obj = datetime.strptime(day, "'%Y-%m-%d'")
-        # print('day_obj1' + str(day_obj))
-
-        # # Assume the day is in PST
-        # pst_tz = pytz.timezone('America/Los_Angeles')
-        # day_obj = pst_tz.localize(day_obj)
-        # print('day_obj2' + str(day_obj))
-
-        # # Convert the day to UTC
-        # utc_tz = pytz.timezone('UTC')
-        # day_obj = day_obj.astimezone(utc_tz)
-        # print('day_obj3' + str(day_obj))
-
-        # # Format the day in the format expected by SQLite
-        # day_str = day_obj.strftime("%Y-%m-%d")
-        # print('day_str' + day_str)
-
         # Select only rows from the specified day
         windy = cursor.execute("SELECT * FROM wind WHERE date(time) = ?", (day,))
     else:
@@ -230,8 +214,7 @@ def on_message(client, userdata, message):
         global last_image_date
         print('\nEnd image')
         last_image_date = datetime.now(timezone('US/Pacific')).strftime("%m/%d %I:%M%p")
-        filename = IMAGE_PATH + datetime.now(timezone('US/Pacific')).strftime("%m_%d_%H_%M") + ".jpg"
-        print("copying " + TMPJPGFILE + " to " + filename)
+        filename = IMAGE_PATH + '/' + datetime.now(timezone('US/Pacific')).strftime("%m_%d_%H_%M") + ".jpg"
         # Copy TMPJPGFILE to filename
         shutil.copy2(TMPJPGFILE, filename)
 
@@ -333,7 +316,7 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS wind
 # conn.commit()
 
 windy = cursor.execute("SELECT * FROM wind")
-print(windy)
+# print(windy)
 ti=[]
 di=[]
 av=[]
@@ -346,7 +329,7 @@ for row in windy:
     av.append(row[2])
     gu.append(row[3])
     ll.append(row[4])
-    print(row)
+    # print(row)
 
 cursor.close()
 conn.close()
