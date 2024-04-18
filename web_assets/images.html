@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Viewer</title>
+    <link rel="stylesheet" href="/web_assets/styles.css">
+    <script>
+        let images = [];
+        let index = 0;
+        const password = 'wingersrock';
+        let deleteConfirmed = false;
+
+        async function fetchImages() {
+            const response = await fetch('/list_images');
+            const data = await response.json();
+            images = data.files;
+            displayImage();
+        }
+
+        function displayImage() {
+            const img = document.getElementById('image');
+            img.src = '/images/' + images[index];
+            const dateStr = images[index].replace(/_/g, '/').replace('.jpg', '');
+            document.getElementById('date').textContent = dateStr;
+        }
+
+        function nextImage() {
+            if (index < images.length - 1) {
+                index++;
+                displayImage();
+            }
+        }
+
+        function previousImage() {
+            if (index > 0) {
+                index--;
+                displayImage();
+            }
+        }
+
+        async function deleteImage() {
+            if (!deleteConfirmed) {
+                const userPassword = prompt('Please enter the password to delete the image:');
+                if (userPassword !== password) {
+                    alert('Incorrect password');
+                    return;
+                }
+                deleteConfirmed = true;
+            }
+            const response = await fetch('/delete_image?filename=' + images[index]);
+            const data = await response.json();
+            alert('Deleted: ' + data.deleted);
+            images.splice(index, 1);
+            if (images.length === 0) {
+                document.getElementById('image').src = '';
+            } else if (index >= images.length) {
+                index = images.length - 1;
+                displayImage();
+            } else {
+                displayImage();
+            }
+        }
+
+        window.onload = fetchImages;
+    </script>
+</head>
+<body>
+    <div id="controls">
+        <button onclick="previousImage()">Newer</button>
+        <button onclick="nextImage()">Older</button>
+    </div>
+    <div id="date"></div>
+    <div id="image-container">
+        <img id="image" src="">
+        <button onclick="deleteImage()">Delete</button>
+    </div>
+</body>
+</html>

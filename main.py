@@ -80,6 +80,11 @@ def list_files():
     files = sorted(os.listdir(IMAGE_PATH),reverse=True)
     return {"files": files}
 
+@app.get("/delete_image")
+def delete_image(filename: str):
+    os.remove(IMAGE_PATH + '/' + filename)
+    return {"deleted": filename}
+
 @app.get("/wind")
 def root(day: Optional[str] = None):
     conn = sqlite3.connect(DATABASE)
