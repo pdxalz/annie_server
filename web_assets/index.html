@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="/web_assets/style.css">
+    <!--link rel="stylesheet" href="./style.css"-->
 
     <script type="text/javascript" language="javascript">
         // start FastAPI servr
@@ -20,12 +21,20 @@
         //const serverUrl = 'http://107.174.172.150';
         
         // const apiUrl = serverUrl + '/wind?day=2024-04-16';
-        const apiUrl = serverUrl + '/wind';
+        let apiUrl = serverUrl + '/wind?day=';
         const apiImage = serverUrl + '/get_image';
 
-        function getData() {
-            // Define the API URL
+        // get wind data for specific date use this format
+        //serverUrl + '/wind?day=YYYY-MM-DD';
+        function getData(date) {
+            
+            // add date to the url
+            let dateStr = date.toISOString().substring(0,10);
 
+            if (dateStr)
+                apiUrl += dateStr;
+
+            console.log("getting " + apiUrl)
             // Make a GET request
             fetch(apiUrl)
                 .then(response => {
@@ -55,7 +64,9 @@
                     console.log(dirfixed);
                     console.log(data);
 
-                    updateLatestsStats(test_json)
+                    updateLatestsStats(test_json);
+
+                    updateGraphTitle(date);
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -115,6 +126,15 @@
                "<h2>" + json_data.avg[json_data.avg.length-1] + "(g" +json_data.gust[json_data.gust.length-1] + ")<small>mph</small>  "  +directionString(json_data.dir[json_data.dir.length-1]) + "</br><small>"  + json_data.time[json_data.time.length-1]  + "</small></h2><br>";
            
         }
+
+        function updateGraphTitle(date){
+ 
+            var title = document.getElementById("graph-title");
+
+            title.innerHTML =
+                '<h4> Wind Graph For ' + date.toLocaleString('en-US',  {dateStyle: 'short'})+ '</h4>';
+        }
+
     </script>
 </head>
 
@@ -129,6 +149,7 @@
     </div>
 
     <div class="w3-panel w3-pale-blue" style="direction: rtl; overflow-x: auto; overflow-y: hidden;">
+        <div id="graph-title"></div>
         <div style="width:3000px; height: 500px">
             <canvas id="myChart2" height="500" width="0"></canvas>
         </div>
@@ -258,7 +279,13 @@
                 }
             }
         });
-        getData();
+
+        //get today (PST)
+        let date = new Date();
+        let options = {timeZone: 'America/Los_Angeles',dateStyle: 'short'};
+        let pacificCoastTime = date.toLocaleString('en-US', options);
+
+        getData(new Date(Date.parse(pacificCoastTime)));
 
     </script>
 </body>
