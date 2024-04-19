@@ -19,8 +19,14 @@
         function displayImage() {
             const img = document.getElementById('image');
             img.src = '/images/' + images[index];
-            const dateStr = images[index].replace(/_/g, '/').replace('.jpg', '');
-            document.getElementById('date').textContent = dateStr;
+
+            const dateStr = images[index].replace('.jpg', '');
+            const month = dateStr.slice(0, 2);
+            const day = dateStr.slice(3, 5);
+            const hour = dateStr.slice(6, 8);
+            const minute = dateStr.slice(9, 11);
+            const formattedDateStr = `${month}/${day}   ${hour}:${minute}`;
+            document.getElementById('date').textContent = formattedDateStr;
         }
 
         function nextImage() {
