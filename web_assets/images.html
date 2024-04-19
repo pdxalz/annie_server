@@ -7,7 +7,7 @@
         let images = [];
         let index = 0;
         const password = 'wingersrock';
-        let deleteConfirmed = false;
+        let takeImageConfirmed = false;
 
         async function fetchImages() {
             const response = await fetch('/list_images');
@@ -37,18 +37,35 @@
             }
         }
 
+        async function takeImage(size) {
+            if (!takeImageConfirmed) {
+                const userPassword = prompt('Please enter the password to take an image:');
+                if (userPassword !== password) {
+                    alert('Incorrect password');
+                    return;
+                }
+                takeImageConfirmed = true;
+            }
+            const response = await fetch('/take_image?size=' + size);
+            const data = await response.json();
+            // alert('Image capture command sent');
+            await fetchImages();  // Fetch the updated list of images
+            index = 0;
+            displayImage();
+        }
+
         async function deleteImage() {
-            if (!deleteConfirmed) {
+            if (!takeImageConfirmed) {
                 const userPassword = prompt('Please enter the password to delete the image:');
                 if (userPassword !== password) {
                     alert('Incorrect password');
                     return;
                 }
-                deleteConfirmed = true;
+                takeImageConfirmed = true;
             }
             const response = await fetch('/delete_image?filename=' + images[index]);
             const data = await response.json();
-            alert('Deleted: ' + data.deleted);
+            // alert('Deleted: ' + data.deleted);
             images.splice(index, 1);
             if (images.length === 0) {
                 document.getElementById('image').src = '';
@@ -71,7 +88,12 @@
     <div id="date"></div>
     <div id="image-container">
         <img id="image" src="">
-        <button onclick="deleteImage()">Delete</button>
+        <div id="actions">
+            <button onclick="takeImage('small')">Take Small Image</button>
+            <button onclick="takeImage('medium')">Take Medium Image</button>
+            <button onclick="takeImage('large')">Take Large Image</button>
+            <button onclick="deleteImage()">Delete</button>
+        </div>
     </div>
 </body>
 </html>

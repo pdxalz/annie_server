@@ -30,15 +30,18 @@ from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse 
 from datetime import datetime
 from typing import Optional
+import paho.mqtt.publish as publish
 
 
 
 
 
 
-# MQTT topics
+# MQTT 
+MQTT_HOST = 'broker.hivemq.com'
 TOPIC_ALL = 'zimbuktu/#'
 TOPIC_WIND = 'zimbuktu/wind'
+TOPIC_COMMAND = 'zimbuktu/cmd'
 TOPIC_JPG_START = 'zimbuktu/jpgStart'
 TOPIC_JPG_END = 'zimbuktu/jpgEnd'
 TOPIC_JPG_DATA = 'zimbuktu/jpgData'
@@ -79,6 +82,21 @@ app.mount("/images", StaticFiles(directory=IMAGE_PATH), name="images")
 def list_files():
     files = sorted(os.listdir(IMAGE_PATH),reverse=True)
     return {"files": files}
+
+@app.get("/take_image")
+def take_image(size: str):
+    topic = TOPIC_COMMAND
+    if size == 'small':
+        publish.single(topic, "p2", hostname=MQTT_HOST)
+    elif size == 'medium':
+        publish.single(topic, "p4", hostname=MQTT_HOST)
+    elif size == 'large':
+        publish.single(topic, "p5", hostname=MQTT_HOST)
+    else:
+        return {"error": "Invalid size parameter"}
+
+    return {"message": "Image capture command sent"}
+
 
 @app.get("/delete_image")
 def delete_image(filename: str):
@@ -240,7 +258,7 @@ def on_message(client, userdata, message):
 def mqtt_client_init(client):
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect(host='broker.hivemq.com', port=1883)
+    client.connect(host=MQTT_HOST, port=1883)
     client.loop_start()
 
 
