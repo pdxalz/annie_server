@@ -1,8 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    
+    <link rel="stylesheet" href="/web_assets/style.css">
+    <!--<link rel="stylesheet" href="style.css">-->
+    <script src="/web_assets/common.js" type="text/javascript"></script> 
+    <!--<script src="common.js" type="text/javascript"></script>-->
+    
+
     <title>Image Viewer</title>
-    <link rel="stylesheet" href="/web_assets/styles.css">
+    
     <script>
         let images = [];
         let index = 0;
@@ -10,7 +20,7 @@
         let takeImageConfirmed = false;
 
         async function fetchImages() {
-            const response = await fetch('/list_images');
+            const response = await fetch(serverUrl + '/list_images');
             const data = await response.json();
             images = data.files;
             displayImage();
@@ -18,7 +28,7 @@
 
         function displayImage() {
             const img = document.getElementById('image');
-            img.src = '/images/' + images[index];
+            img.src = serverUrl + '/images/' + images[index];
 
             const dateStr = images[index].replace('.jpg', '');
             const month = dateStr.slice(0, 2);
@@ -87,19 +97,24 @@
     </script>
 </head>
 <body>
-    <div id="controls">
-        <button onclick="previousImage()">Newer</button>
+    <div w3-include-html="header.html"></div>
+    <div class="w3-panel w3-pale-blue" id="controls">
         <button onclick="nextImage()">Older</button>
+        <button onclick="previousImage()">Newer</button>
     </div>
-    <div id="date"></div>
-    <div id="image-container">
+    
+    <div id="image-container" class="w3-panel w3-pale-blue">
+        <div id="date"></div>
         <img id="image" src="">
-        <div id="actions">
+        <div id="actions" class="w3-panel w3-pale-blue">
             <button onclick="takeImage('small')">Take Small Image</button>
             <button onclick="takeImage('medium')">Take Medium Image</button>
             <button onclick="takeImage('large')">Take Large Image</button>
             <button onclick="deleteImage()">Delete</button>
         </div>
     </div>
+<script>
+    includeHTML();
+</script>
 </body>
 </html>
