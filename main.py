@@ -1,7 +1,7 @@
 #  docker-compose up
 #   (cd to Desktop/annie_api/)
 #  docker build . -t anniem
-#  docker run --rm --volume $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.113 anniem
+#  docker run --rm -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.113 -v roosterpict:/rooster  anniem
 #  docker ps -a
 #   docker system prune -a      (wipe out all data)
 #   sudo find / -name test.db   (find the location of the database)
@@ -53,6 +53,7 @@ INDEX_HTML_PATH = 'web_assets/index.html'
 DATABASE = "/winddata/test.db" 
 TMPJPGFILE = "/winddata/temp.jpg"
 IMAGE_PATH = "/winddata/images"
+ROOSTERJPGFILE = "/rooster/camera0.jpg"
 
 last_image_date = 'No Images'
 app = FastAPI()
@@ -102,6 +103,21 @@ def take_image(size: str):
 def delete_image(filename: str):
     os.remove(IMAGE_PATH + '/' + filename)
     return {"deleted": filename}
+
+@app.get("/roostercam")
+def roostercam():
+    print(os.getcwd())
+    print(ROOSTERJPGFILE)
+    
+    files = os.listdir("/rooster")
+
+    for file in files:
+        print(file)
+
+    if os.path.exists(ROOSTERJPGFILE):
+        return FileResponse(ROOSTERJPGFILE)
+    return FileResponse('web_assets/404.jpg')
+
 
 @app.get("/wind")
 def root(day: Optional[str] = None):
@@ -161,6 +177,7 @@ def get_first_date():
     
 @app.get("/get_image")
 async def get_image():
+    print("hello get image")
     if os.path.exists(TMPJPGFILE):
         return FileResponse(TMPJPGFILE)
     return FileResponse('web_assets/404.jpg')
