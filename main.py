@@ -48,6 +48,7 @@ TOPIC_JPG_DATA = 'zimbuktu/jpgData'
 
 #Paths to static html related files, copied when server starts
 INDEX_HTML_PATH = 'web_assets/index.html'
+ROOSTERCAM_HTML_PATH = 'web_assets/roostercam.html'
 
 #Paths to non-voliatile data, they exist outside of docker container
 DATABASE = "/winddata/test.db" 
@@ -78,6 +79,7 @@ app.add_middleware(
 
 app.mount("/web_assets", StaticFiles(directory="web_assets"), name="web_assets")
 app.mount("/images", StaticFiles(directory=IMAGE_PATH), name="images")
+app.mount("/rooster", StaticFiles(directory='/rooster'), name="rooster")
 
 @app.get("/list_images")
 def list_files():
@@ -104,16 +106,12 @@ def delete_image(filename: str):
     os.remove(IMAGE_PATH + '/' + filename)
     return {"deleted": filename}
 
+@app.get("/roostercam.php")
+def roostercamphp():
+    return FileResponse(ROOSTERCAM_HTML_PATH)
+
 @app.get("/roostercam")
 def roostercam():
-    print(os.getcwd())
-    print(ROOSTERJPGFILE)
-    
-    files = os.listdir("/rooster")
-
-    for file in files:
-        print(file)
-
     if os.path.exists(ROOSTERJPGFILE):
         return FileResponse(ROOSTERJPGFILE)
     return FileResponse('web_assets/404.jpg')
