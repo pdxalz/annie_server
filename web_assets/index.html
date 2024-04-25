@@ -54,6 +54,8 @@
         </form>
     </div>
 
+    <div id="tide-table"></div>
+
     <!-- <div class="w3-panel w3-pale-blue">
         <div id="devInfo"></div>
         </div>
@@ -156,6 +158,38 @@
 
         getData(new Date(Date.parse(pacificCoastTime)));
         includeHTML();
+
+
+        // Fetch the tide data from the API
+        fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=9440171&product=predictions&datum=mllw&time_zone=lst_ldt&units=english&interval=hilo&format=json')
+            .then(response => response.json())
+            .then(data => {
+                // Create the table
+                var table = document.createElement('table');
+
+                // Create the header row
+                var headerRow = document.createElement('tr');
+                ['Time', 'H/L', 'ft'].forEach(text => {
+                    var th = document.createElement('th');
+                    th.textContent = text;
+                    headerRow.appendChild(th);
+                });
+                table.appendChild(headerRow);
+
+                // Create the data rows
+                data.predictions.slice(0, 3).forEach(prediction => {
+                    var row = document.createElement('tr');
+                    [prediction.t, prediction.type, prediction.v].forEach(text => {
+                        var td = document.createElement('td');
+                        td.textContent = text;
+                        row.appendChild(td);
+                    });
+                    table.appendChild(row);
+                });
+
+                // Add the table to the page
+                document.getElementById('tide-table').appendChild(table);
+            });
     </script>
 </body>
 
