@@ -35,8 +35,7 @@
 
     <div class="w3-panel w3-pale-blue">
         <p> The blue line is the direction. North is at the center of the chart.
-            Updates occur every 5 minutes from 10AM to 9PM if it is windy. Otherwise it is only updated on the hour.
-            The sensor will be taken down in September for improvements and will return in May.</p>
+            Updates occur every 10 minutes.</p>
     </div>
 
     <div class="w3-panel w3-pale-blue">
@@ -177,9 +176,11 @@
                 table.appendChild(headerRow);
 
                 // Create the data rows
-                data.predictions.slice(0, 3).forEach(prediction => {
+                data.predictions.slice(0, 4).forEach(prediction => {
+                    var date = new Date(prediction.t);
+                    var time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                     var row = document.createElement('tr');
-                    [prediction.t, prediction.type, prediction.v].forEach(text => {
+                    [time, prediction.type, prediction.v].forEach(text => {
                         var td = document.createElement('td');
                         td.textContent = text;
                         row.appendChild(td);
