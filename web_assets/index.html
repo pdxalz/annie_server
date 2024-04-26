@@ -35,9 +35,20 @@
 
     <div class="w3-panel w3-pale-blue">
         <p> The blue line is the direction. North is at the center of the chart.
-            Updates occur every 10 minutes.</p>
+            Updates occur every 5 minutes from 10AM to 9PM if it is windy. Otherwise it is only updated on the hour.
+            The sensor will be taken down in September for improvements and will return in May.</p>
     </div>
 
+    <div class="w3-panel w3-pale-blue">
+        <h3>Tide Info</h3>
+        <h4>Knapp Landing,WA</h4>
+        <div class="w3-centered" id="tide-table" ></div>
+    </div>
+
+    <div class="w3-panel img-div">
+        <img id="windpict" alt="Description of image">
+    </div>
+   
     <div class="w3-panel w3-pale-blue">
         <p style="font-size:150%; text-align: center;">
             If you would like make a donation to help pay for the hardware and recurring costs,
@@ -53,102 +64,13 @@
         </form>
     </div>
 
-    <div id="tide-table"></div>
-
-    <!-- <div class="w3-panel w3-pale-blue">
-        <div id="devInfo"></div>
-        </div>
-        -->
-    <div class="w3-panel img-div">
-        <img id="windpict" alt="Description of image">
-    </div>
-   
     <script>
 
         document.getElementById("windpict").src = apiImage;
 
         const ctx = document.getElementById('myChart2');
 
-        chart2 = new Chart(ctx, {
-            type: "line",
-            data: {
-                datasets: [{
-                    label: "Direction (North at middle)",
-                    pointRadius: 1,
-                    pointBackgroundColor: "rgb(0,0,255)",
-                    borderColor: "blue",
-                    fill: false,
-                    borderWidth: 4,
-                    tension: 0.3
-                }, {
-                    label: "Wind Speed",
-                    pointRadius: 1,
-                    pointBackgroundColor: "rgb(0,0,255)",
-                    borderColor: "green",
-                    borderWidth: 4,
-                    fill: false,
-                    yAxisID: 'speed',
-                    tension: 0.3
-                }, {
-                    label: "Gusts",
-                    pointRadius: 1,
-                    pointBackgroundColor: "rgb(255,0,0)",
-                    borderColor: "red",
-                    fill: false,
-                    borderWidth: 1,
-                    yAxisID: 'speed',
-                    tension: 0.3
-                }, {
-                    label: "Lulls",
-                    pointRadius: 1,
-                    pointBackgroundColor: "rgb(255,0,0)",
-                    borderColor: "black",
-                    fill: '-1',
-                    borderWidth: 1,
-                    yAxisID: 'speed',
-                    tension: 0.3
-                },
-                ]
-            },
-            options: {
-                plugins: {
-                    legend: {   
-                        display: true
-                }
-                },
-                scales: {
-                    
-                    speed:{
-                        position: 'right',
-                        min: 0, 
-                        max:40,
-                        ticks:{      
-                            color: 'gray',
-                            font:{
-                                weight: 'bold',
-                                size:20
-                            }
-                        }
-                    },
-                    direction:{
-                        position: 'right',
-                        min: 0,
-                        max: 8,
-                        ticks: {
-                            callback: function(value, index, ticks) {
-                                var x = ["S", "SW", "W", "NW", "N", "NE", "E", "SE", "S"];
-                                return x[value % x.length];
-                            },
-                            color: 'blue',
-                            font:{
-                                weight: 'bold',
-                                size: 20
-                            },
-                        }
-                    }
-                }
-            }
-        });
+        chart2 = new Chart(ctx, chartConfig);
 
         //get today (PST)
         let date = new Date();
@@ -158,9 +80,8 @@
         getData(new Date(Date.parse(pacificCoastTime)));
         includeHTML();
 
-
-        // Fetch the tide data from the API
-        fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=9440171&product=predictions&datum=mllw&time_zone=lst_ldt&units=english&interval=hilo&format=json')
+         // Fetch the tide data from the API
+         fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=9440171&product=predictions&datum=mllw&time_zone=lst_ldt&units=english&interval=hilo&format=json')
             .then(response => response.json())
             .then(data => {
                 // Create the table
@@ -176,20 +97,24 @@
                 table.appendChild(headerRow);
 
                 // Create the data rows
-                data.predictions.slice(0, 4).forEach(prediction => {
+                data.predictions.forEach(prediction => {
                     var date = new Date(prediction.t);
                     var time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                     var row = document.createElement('tr');
-                    [time, prediction.type, prediction.v].forEach(text => {
+                    [time, prediction.type, prediction.v.substring(0,4)].forEach(text => {
                         var td = document.createElement('td');
                         td.textContent = text;
+                        td.style='width:150px';
                         row.appendChild(td);
                     });
                     table.appendChild(row);
                 });
-
+                
+                table.setAttribute('class','w3-centered w3-striped center')
                 // Add the table to the page
-                document.getElementById('tide-table').appendChild(table);
+                div = document.getElementById('tide-table');
+                div.appendChild(table);
+
             });
     </script>
 </body>

@@ -28,108 +28,12 @@
             <canvas id="myChart2" height="500" width="0"></canvas>
         </div>
     </div>
-
-    <div class="w3-panel w3-pale-blue">
-        <p> The blue line is the direction. North is at the center of the chart.
-            Updates occur every 5 minutes from 10AM to 9PM if it is windy. Otherwise it is only updated on the hour.
-            The sensor will be taken down in September for improvements and will return in May.</p>
-    </div>
-
-   
     <script>
 
 
         const ctx = document.getElementById('myChart2');
 
-        chart2 = new Chart(ctx, {
-            type: "line",
-            data: {
-                datasets: [{
-                    label: "Direction (North at middle)",
-                    pointRadius: 1,
-                    pointBackgroundColor: "rgb(0,0,255)",
-                    borderColor: "blue",
-                    fill: false,
-                    borderWidth: 4,
-                    tension: 0.3
-                }, {
-                    label: "Wind Speed",
-                    pointRadius: 1,
-                    pointBackgroundColor: "rgb(0,0,255)",
-                    borderColor: "green",
-                    borderWidth: 4,
-                    fill: false,
-                    yAxisID: 'speed',
-                    tension: 0.3
-                }, {
-                    label: "Gusts",
-                    pointRadius: 1,
-                    pointBackgroundColor: "rgb(255,0,0)",
-                    borderColor: "red",
-                    fill: false,
-                    borderWidth: 1,
-                    yAxisID: 'speed',
-                    tension: 0.3
-                }, {
-                    label: "Lulls",
-                    pointRadius: 1,
-                    pointBackgroundColor: "rgb(255,0,0)",
-                    borderColor: "black",
-                    fill: '-1',
-                    borderWidth: 1,
-                    yAxisID: 'speed',
-                    tension: 0.3
-                },
-                ]
-            },
-            options: {
-                plugins: {
-                    //coming soon ..
-                    title: {
-                    display: false,
-                    text: 'Custom Chart Title',
-                    position: 'top',
-                    align: 'end'
-                    }
-                },
-                legend: {   
-                    display: true,
-                    align: "left",
-                    lineWidth: 200
-                },
-                scales: {
-                    
-                    speed:{
-                        position: 'right',
-                        min: 0, 
-                        max:40,
-                        ticks:{      
-                            color: 'gray',
-                            font:{
-                                weight: 'bold',
-                                size:20
-                            }
-                        }
-                    },
-                    direction:{
-                        position: 'right',
-                        min: 0,
-                        max: 8,
-                        ticks: {
-                            callback: function(value, index, ticks) {
-                                var x = ["S", "SW", "W", "NW", "N", "NE", "E", "SE", "S"];
-                                return x[value % x.length];
-                            },
-                            color: 'blue',
-                            font:{
-                                weight: 'bold',
-                                size: 20
-                            },
-                        }
-                    }
-                }
-            }
-        });
+        chart2 = new Chart(ctx, chartConfig);
 
         //get today (PST)
         let date = new Date();

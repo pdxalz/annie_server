@@ -52,6 +52,12 @@ img{
     align-items: flex-start;
 }
 
+
+.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 /* Menu CSS */
 /* Style the navigation menu */
 .topnav {

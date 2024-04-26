@@ -128,7 +128,7 @@ function updateGraphTitle(date){
     let title = document.getElementById("graph-title");
 
     title.innerHTML =
-        '<h4> Wind Graph For ' + date.toLocaleString('en-US',  {dateStyle: 'short'})+ '</h4>';
+        '<h3> Wind Graph ' + date.toLocaleString('en-US',  {dateStyle: 'short'})+ '</h3>';
 }
 
 function renderButtons(date){
@@ -195,3 +195,101 @@ function showMessage(userMsg){
       }
     }
   }
+
+
+  // chart js config
+  const arrows = {
+    id:'arrows',
+    beforeInit(chart, args, plugins){
+        console.log("hello")
+        const fitValue  = chart.legend.fit;
+        chart.legend.fit =  function fit(){
+            fitValue.bind(chart.legend)();
+            return this.height +=40
+        }
+    }
+}
+
+
+const chartConfig =  {
+    plugins: [arrows],
+    type: "line",
+    data: {
+        datasets: [{
+            label: "Direction (North at middle)",
+            pointRadius: 1,
+            pointBackgroundColor: "rgb(0,0,255)",
+            borderColor: "blue",
+            fill: false,
+            borderWidth: 4,
+            tension: 0.3
+        }, {
+            label: "Wind Speed",
+            pointRadius: 1,
+            pointBackgroundColor: "rgb(0,0,255)",
+            borderColor: "green",
+            borderWidth: 4,
+            fill: false,
+            yAxisID: 'speed',
+            tension: 0.3
+        }, {
+            label: "Gusts",
+            pointRadius: 1,
+            pointBackgroundColor: "rgb(255,0,0)",
+            borderColor: "red",
+            fill: false,
+            borderWidth: 1,
+            yAxisID: 'speed',
+            tension: 0.3
+        }, {
+            label: "Lulls",
+            pointRadius: 1,
+            pointBackgroundColor: "rgb(255,0,0)",
+            borderColor: "black",
+            fill: '-1',
+            borderWidth: 1,
+            yAxisID: 'speed',
+            tension: 0.3
+        },
+        ]
+    },
+    options: {
+        plugins: {
+            legend: {   
+                display: true,
+                align: 'end'
+            }   
+        },
+        scales: {
+            
+            speed:{
+                position: 'right',
+                min: 0, 
+                max:40,
+                ticks:{      
+                    color: 'gray',
+                    font:{
+                        weight: 'bold',
+                        size:20
+                    }
+                }
+            },
+            direction:{
+                position: 'right',
+                min: 0,
+                max: 8,
+                ticks: {
+                    callback: function(value, index, ticks) {
+                        var x = ["S", "SW", "W", "NW", "N", "NE", "E", "SE", "S"];
+                        return x[value % x.length];
+                    },
+                    color: 'blue',
+                    font:{
+                        weight: 'bold',
+                        size: 20
+                    },
+                }
+            }
+        }
+    }
+};
