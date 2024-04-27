@@ -34,16 +34,12 @@
     </div>
 
     <div class="w3-panel w3-pale-blue">
-        <p> The blue line is the direction. North is at the center of the chart.
-            Updates occur every 5 minutes from 10AM to 9PM if it is windy. Otherwise it is only updated on the hour.
-            The sensor will be taken down in September for improvements and will return in May.</p>
-    </div>
-
-    <div class="w3-panel w3-pale-blue">
         <h3>Tide Info</h3>
         <h4>Knapp Landing,WA</h4>
         <div class="w3-centered" id="tide-table" ></div>
     </div>
+
+    <div id="water-temperature"></div>
 
     <div class="w3-panel img-div">
         <img id="windpict" alt="Description of image">
@@ -79,6 +75,17 @@
 
         getData(new Date(Date.parse(pacificCoastTime)));
         includeHTML();
+
+        // Fetch the water temperature data from the API
+        fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=latest&station=9440422&product=water_temperature&datum=STND&time_zone=gmt&units=english&format=json')
+            .then(response => response.json())
+            .then(data => {
+                // Get the water temperature
+                var temperature = data.data[0].v;
+
+                // Add the water temperature to the page
+                document.getElementById('water-temperature').textContent = 'Water temperature: ' + temperature + '°F';
+            });
 
          // Fetch the tide data from the API
          fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=9440171&product=predictions&datum=mllw&time_zone=lst_ldt&units=english&interval=hilo&format=json')
