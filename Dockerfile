@@ -26,4 +26,5 @@ ENV SERVER_URL=http://192.168.68.113:8000
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
 #CMD ["gunicorn", "--bind", "0.0.0.0:8000", "-k", "uvicorn.workers.UvicornWorker", "main:app"]
 CMD sed -i 's|__SERVER_URL__|'"$SERVER_URL"'|g' ./web_assets/index.html && \
+    sed -i 's|__SERVER_URL__|'"$SERVER_URL"'|g' ./web_assets/common.js && \
     exec gunicorn --bind 0.0.0.0:8000 -k uvicorn.workers.UvicornWorker main:app

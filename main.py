@@ -1,5 +1,5 @@
 #  docker-compose up
-#   (cd to Desktop/annie_api/)
+#   (cd to annie_server)
 #  docker build . -t annie_img
 #  docker run --rm -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.113 -v roosterpict:/rooster  annie_img
 #  docker ps -a
@@ -57,6 +57,13 @@ IMAGE_PATH = "/winddata/images"
 ROOSTERJPGFILE = "/rooster/camera0.jpg"
 
 last_image_date = 'No Images'
+
+image_size = 0
+rest_image_size = 0  # used to indicate how many bytes hasn't received yet for one image
+num_bytes_received = 0
+num_bytes_in_image = 1
+last_percentage_printed = 0
+
 app = FastAPI()
 
 origins = [
@@ -210,14 +217,16 @@ def on_connect(client, userdata, flags, rc):
     else:
         print('Connection refused')
 
-image_size = 0
-rest_image_size = 0  # used to indicate how many bytes hasn't received yet for one image
+
 def on_message(client, userdata, message):
     """
         on received packet: the whole payload is python3 byte object
     """
     #print('topic:', message.topic)
     # print('payload:', message.payload)
+    global num_bytes_in_image
+    global num_bytes_received
+    global last_percentage_printed 
 
     if (message.topic == TOPIC_WIND):
         jd = json.loads(message.payload)
@@ -245,9 +254,14 @@ def on_message(client, userdata, message):
         conn.close()
 
     elif (message.topic == TOPIC_JPG_START):
-        print('Start Image')
+        
+        num_bytes_received = 0
+        last_percentage_printed = 0 
+        num_bytes_in_image = int(message.payload.decode('utf-8'))
+        print(f'Start Image, bytes: {num_bytes_in_image}')
         if os.path.exists(TMPJPGFILE):
             os.remove(TMPJPGFILE)
+
     elif (message.topic == TOPIC_JPG_END):
         global last_image_date
         print('\nEnd image')
@@ -257,6 +271,12 @@ def on_message(client, userdata, message):
         shutil.copy2(TMPJPGFILE, filename)
 
     elif (message.topic == TOPIC_JPG_DATA):
+        num_bytes_received += len(message.payload)
+        percentage_received = (num_bytes_received / num_bytes_in_image) * 100
+        if percentage_received - last_percentage_printed >= 10:
+            print(f'{int(percentage_received)}% received')
+            last_percentage_printed = percentage_received 
+
         image_file = open(TMPJPGFILE, 'ab')
         image_file.write(message.payload)
         image_file.close()
@@ -268,7 +288,23 @@ def on_message(client, userdata, message):
 
 
 
+def has_correct_checksum(byte_array):
+    # Calculate the checksum from the byte array (excluding the last two bytes)
+    calculated_checksum = sum(byte_array[:-3]) % 0x10000
 
+    # Extract the checksum from the second and third to last bytes of the byte array
+    stored_checksum = int.from_bytes(byte_array[-3:-1], byteorder='little')
+
+    # Extract the count from the last byte of the byte array
+    count = int.from_bytes(byte_array[-1:], byteorder='little')
+
+    # If the checksums are different, print them in hex
+    if calculated_checksum != stored_checksum:
+        print(f'Calculated checksum: {calculated_checksum:02x}, Stored checksum: {stored_checksum:02x}, count: {count} ')
+
+
+    # Return True if the calculated checksum matches the stored checksum, False otherwise
+    return calculated_checksum == stored_checksum
 
 def mqtt_client_init(client):
     client.on_connect = on_connect

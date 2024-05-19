@@ -3,9 +3,9 @@
 //    uvicorn script:app --reload
 var chart2;
 
-// const serverUrl = 'http://192.168.68.113:8000';
-//const serverUrl = '__SERVER_URL__';
-const serverUrl = 'http://107.174.172.150';
+//const serverUrl = 'http://192.168.68.113';
+const serverUrl = '__SERVER_URL__';
+// const serverUrl = 'http://107.174.172.150';
 const apiUrl = serverUrl + '/wind?day=';
 const apiImage = serverUrl + '/get_image';
 

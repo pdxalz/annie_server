@@ -16,13 +16,21 @@
     <script>
         let images = [];
         let index = 0;
-        const password = 'wingersrock';
+        const password = 'Wind';
         let takeImageConfirmed = false;
 
         async function fetchImages() {
             const response = await fetch(serverUrl + '/list_images');
             const data = await response.json();
             images = data.files;
+
+            // Check if the filename is in the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const filename = urlParams.get('filename');
+            if (filename) {
+                index = images.indexOf(filename);
+            }
+
             displayImage();
         }
 
@@ -64,7 +72,6 @@
             }
             const response = await fetch('/take_image?size=' + size);
             const data = await response.json();
-            // alert('Image capture command sent');
             await fetchImages();  // Fetch the updated list of images
             index = 0;
             displayImage();
@@ -81,7 +88,6 @@
             }
             const response = await fetch('/delete_image?filename=' + images[index]);
             const data = await response.json();
-            // alert('Deleted: ' + data.deleted);
             images.splice(index, 1);
             if (images.length === 0) {
                 document.getElementById('image').src = '';
@@ -113,7 +119,8 @@
             <button onclick="deleteImage()">Delete</button>
         </div>
     </div>
-<script>
+    <h3>Images may take 5 minutes and may cause delays in wind readings.</h3>
+    <h3>Use sparingly. No images on 90 degree days</h3><script>
     includeHTML();
 </script>
 </body>

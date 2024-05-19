@@ -32,23 +32,49 @@
             <canvas id="myChart2" height="500" width="0"></canvas>
         </div>
     </div>
-    <div class="w3-card-4 w3-pale-blue">
-        <div class="w3-container w3-center">
-            <h3>Tide Info</h3>
-            <h4>Knapp Landing,WA</h4>
-            <div class="w3-centered" id="tide-table" ></div>
-            <h3>Water Temp</h3>
-            <div id="water-temperature"></div>
+
+    <div style="display: flex; justify-content: space-between;">
+
+        <div class="w3-card-4 w3-pale-blue">
+            <div class="w3-container w3-center">
+                <h3>Useful Links:</h3>
+                <a href="history.html">Sauvie Wind History</a><br>
+                <a href="https://thegorgeismygym.com/forecast/">Temira's wind forecast for Jones and Sauvie Island</a><br>
+                <a href="https://wx.ikitesurf.com/search/45.685/-122.724/10">iKitesurf wind map</a><br>
+                <a href="https://www.windy.com/?45.723,-122.816,12">Windy.com</a><br>
+            </div>
         </div>
-      </div>
-    
 
-    
+        <div class="w3-card-4 w3-pale-blue">
+            <div class="w3-container w3-center">
+                <h3>Water Temp</h3>
+                <div id="water-temperature"></div>
+            </div>
+        </div>
 
+        <div class="w3-card-4 w3-pale-blue">
+            <div class="w3-container w3-center">
+                <h3>Tide Info</h3>
+                <h4>Knapp Landing,WA</h4>
+                <div class="w3-centered" id="tide-table" ></div>
+            </div>
+        </div>
+        
+        <div class="w3-card-4 w3-pale-blue">
+            <div class="w3-container w3-center">
+                <h3>Today's Images</h3>
+                <div class="w3-centered" id="images_list" ></div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- 
     <div class="w3-panel img-div">
         <img id="windpict" alt="Description of image">
     </div>
-   
+    -->
+
     <div class="w3-panel w3-pale-blue">
         <p style="font-size:150%; text-align: center;">
             If you would like make a donation to help pay for the hardware and recurring costs,
@@ -66,7 +92,7 @@
 
     <script>
 
-        document.getElementById("windpict").src = apiImage;
+        // document.getElementById("windpict").src = apiImage;
 
         const ctx = document.getElementById('myChart2');
 
@@ -127,6 +153,23 @@
                 div.appendChild(table);
 
             });
+
+            fetch('/list_images')
+            .then(response => response.json())
+            .then(data => {
+                const today = new Date();
+                const todayStr = `${String(today.getMonth() + 1).padStart(2, '0')}_${String(today.getDate()).padStart(2, '0')}`;
+                const imagesDiv = document.getElementById('images_list');
+                data.files.forEach(file => {
+                    if (file.startsWith(todayStr)) {
+                        const a = document.createElement('a');
+                        a.href = `images.html?filename=${file}`;
+                        a.textContent = file;
+                        imagesDiv.appendChild(a);
+                        imagesDiv.appendChild(document.createElement('br'));
+                    }
+                });
+            });           
     </script>
 </body>
 
