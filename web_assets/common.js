@@ -217,11 +217,12 @@ const chartConfig =  {
     data: {
         datasets: [{
             label: "Direction (North at middle)",
-            pointRadius: 1,
+            pointRadius: 3,
             pointBackgroundColor: "rgb(0,0,255)",
             borderColor: "blue",
             fill: false,
-            borderWidth: 4,
+            borderWidth: 0,
+            yAxisID: 'speed',
             tension: 0.3
         }, {
             label: "Wind Speed",
@@ -261,8 +262,8 @@ const chartConfig =  {
             }   
         },
         scales: {
-            
-            speed:{
+               
+         speed:{
                 position: 'right',
                 min: 0, 
                 max:40,
