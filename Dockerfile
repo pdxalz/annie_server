@@ -13,6 +13,9 @@ ENV PYTHONUNBUFFERED=1
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
 
+# Install nano
+RUN apt-get update && apt-get install -y nano
+
 WORKDIR /app
 COPY . /app
 

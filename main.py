@@ -28,10 +28,53 @@ from email.mime.text import MIMEText
 from fastapi.staticfiles import StaticFiles
 
 from starlette.responses import FileResponse 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 import paho.mqtt.publish as publish
 
+
+class AutoPhoto:
+    def __init__(self):
+        self._prev_direction = 0
+        self._prev_avg_wind = 0
+        self._prev_gusts = 0
+        self._prev_lull = 0
+        self.last_photo_time = datetime.now()
+        self.photo_count = 0
+
+    def should_capture_photo(self, direction, avg_wind, gusts, lull):
+        now = datetime.now()
+        hour = now.hour
+
+        if not os.path.exists('autopict'):
+            return False
+        
+        if now - self.last_photo_time < timedelta(minutes=30):
+            return False
+
+        # reset the count at midnight
+        if hour < 1:
+            self.photo_count = 0
+        # In the morning, if the wind is above 14 mph for two samples, take a photo
+        elif 9 <= hour < 13 and self.photo_count < 1:
+            if avg_wind > 12 and self.prev_avg_wind > 12:
+                return True
+        # In the afternoon
+        elif 13 <= hour < 18 and self.photo_count < 2:  
+            if avg_wind > 10 and self.prev_avg_wind > 10:
+                return True
+            # if self.prev_avg_wind > 12 and (wind_change < 6 or direction_change > 120):
+            #     return True
+
+        return False
+
+    def capture_photo(self, direction, avg_wind, gusts, lull):
+        if self.should_capture_photo(direction, avg_wind, gusts, lull):
+            # Capture the photo
+            publish.single(TOPIC_COMMAND, "p5", hostname=MQTT_HOST)
+            self.last_photo_time = datetime.now()
+            self.prev_avg_wind = avg_wind
+            self.photo_count += 1
 
 
 
@@ -57,6 +100,7 @@ IMAGE_PATH = "/winddata/images"
 ROOSTERJPGFILE = "/rooster/camera0.jpg"
 
 last_image_date = 'No Images'
+auto_photo = AutoPhoto()
 
 image_size = 0
 rest_image_size = 0  # used to indicate how many bytes hasn't received yet for one image
@@ -218,6 +262,9 @@ def on_connect(client, userdata, flags, rc):
         print('Connection refused')
 
 
+
+
+
 def on_message(client, userdata, message):
     """
         on received packet: the whole payload is python3 byte object
@@ -252,6 +299,9 @@ def on_message(client, userdata, message):
         conn.commit()
         cursor.close()
         conn.close()
+
+        auto_photo.capture_photo(jd["a"], jd["g"], 0, 0)
+            
 
     elif (message.topic == TOPIC_JPG_START):
         
