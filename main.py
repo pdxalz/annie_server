@@ -244,7 +244,11 @@ async def read_index():
 
 def hours_minutes(time_str):
     datetime_obj = datetime.strptime(time_str, "%Y-%m-%d %H:%M")
-    return datetime_obj.strftime("%H:%M")
+    if (datetime_obj.strftime("%M") == '00'):
+        return datetime_obj.strftime("%-I:%M%p")
+    else:
+        return datetime_obj.strftime("%-I:%M")
+        
 
 def pst_to_utc(pst_time):
     pst_tz = pytz.timezone('America/Los_Angeles')
