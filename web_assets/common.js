@@ -11,12 +11,12 @@ const apiImage = serverUrl + '/get_image';
 
 // get wind data for specific date use this format
 //serverUrl + '/wind?day=YYYY-MM-DD';
-function getData(date,historyOnly=false) {
-    
-    // add date to the url
-    let dateStr = date.toISOString().substring(0,10);
+function getData(date, historyOnly = false) {
 
-    let url  = apiUrl
+    // add date to the url
+    let dateStr = date.toISOString().substring(0, 10);
+
+    let url = apiUrl
     if (dateStr)
         url += dateStr;
 
@@ -50,16 +50,16 @@ function getData(date,historyOnly=false) {
             //console.log(dirfixed);
             console.log(data);
 
-            if (!historyOnly){
+            if (!historyOnly) {
                 updateLatestsStats(test_json);
             }
             updateGraphTitle(date);
 
-            if (historyOnly){
+            if (historyOnly) {
                 renderButtons(date);
-                if (test_json.time.length == 0){
+                if (test_json.time.length == 0) {
                     showMessage("NO WIND DATA FOR THIS DATE");
-                }else{
+                } else {
                     showMessage("");
                 }
             }
@@ -71,7 +71,7 @@ function getData(date,historyOnly=false) {
 }
 
 // Convert a 0-360 degree direction to a compass point and degrees from it
-function directionString(direction,simple=true) {
+function directionString(direction, simple = true) {
     const dir_dict = {
         0: "N",
         1: "NE",
@@ -89,7 +89,7 @@ function directionString(direction,simple=true) {
     var simpleResult = dir_dict[dir_index];
 
     var res
-    if (simple){
+    if (simple) {
         res = simpleResult;
     } else {
         res = simpleResult + " " + "<small>" + (rem < 0 ? ' ' : '+') + rem + "&#176</small>"
@@ -114,104 +114,109 @@ function timeString(time24) {
 }
 
 //Parse out the latest wind stats and update the HTML
-function updateLatestsStats(json_data){
+function updateLatestsStats(json_data) {
 
     var latestDiv = document.getElementById("latest-stats");
+    // if no data, clear the div
+    if (json_data.time.length == 0) {
+        latestDiv.innerHTML = "<h2>" + "No Wind Data Available" + "</small></h2><br>";
+        return;
+    }
 
     latestDiv.innerHTML =
-       "<h2>" + json_data.avg[json_data.avg.length-1] + "(g" +json_data.gust[json_data.gust.length-1] + ")<small>mph</small>  "  +directionString(json_data.dir[json_data.dir.length-1]) + "</br><small>"  + json_data.time[json_data.time.length-1]  + "</small></h2><br>";
-   
+        "<h2>" + json_data.avg[json_data.avg.length - 1] + "(g" + json_data.gust[json_data.gust.length - 1] + ")<small>mph</small>  " + directionString(json_data.dir[json_data.dir.length - 1]) + "</br><small>" + json_data.time[json_data.time.length - 1] + "</small></h2><br>";
+
 }
 
-function updateGraphTitle(date){
+function updateGraphTitle(date) {
 
     let title = document.getElementById("graph-title");
 
     title.innerHTML =
-        '<h3> Wind Graph ' + date.toLocaleString('en-US',  {dateStyle: 'short'})+ '</h3>';
+        '<h3> Wind Graph ' + date.toLocaleString('en-US', { dateStyle: 'short' }) + '</h3>';
 }
 
-function renderButtons(date){
-    
+function renderButtons(date) {
+
     showndate = date;
     let dayButtons = document.getElementById("day-buttons");
-    
+
     dayButtons.innerHTML = '<input id="next-btn" value="NEXT" type="button" onclick="getData(addDays(showndate,1),true);"></input>  &nbsp;&nbsp <input id="prev-btn" value="BACK" type="button" onclick="getData(addDays(showndate,-1),true);"></input> ';
-           
+
 }
 
 function addDays(date, days) {
     var result = new Date(date);
     result.setDate(result.getDate() + days);
     return result;
-  }
-
-function showMessage(userMsg){
-
-    let msg = document.getElementById("msg");
-    
-    if (userMsg.length > 0)
-        msg.innerHTML = '<p class="w3-panel w3-orange">'+ userMsg +'</p>';
-    else
-         msg.innerHTML = '';
-           
 }
 
- /* Toggle between showing and hiding the navigation menu links when the user clicks on the hamburger menu / bar icon */
- function menu() {
+function showMessage(userMsg) {
+
+    let msg = document.getElementById("msg");
+
+    if (userMsg.length > 0)
+        msg.innerHTML = '<p class="w3-panel w3-orange">' + userMsg + '</p>';
+    else
+        msg.innerHTML = '';
+
+}
+
+/* Toggle between showing and hiding the navigation menu links when the user clicks on the hamburger menu / bar icon */
+function menu() {
     let x = document.getElementById("myLinks");
-        if (x.style.display === "block") {
-            x.style.display = "none";
-        } else {
-            x.style.display = "block";
-        }
- }
+    if (x.style.display === "block") {
+        x.style.display = "none";
+    } else {
+        x.style.display = "block";
+    }
+}
 
 
- function includeHTML() {
+function includeHTML() {
     var z, i, elmnt, file, xhttp;
     /* Loop through a collection of all HTML elements: */
     z = document.getElementsByTagName("*");
     for (i = 0; i < z.length; i++) {
-      elmnt = z[i];
-      /*search for elements with a certain atrribute:*/
-      file = elmnt.getAttribute("w3-include-html");
-      if (file) {
-        /* Make an HTTP request using the attribute value as the file name: */
-        xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-          if (this.readyState == 4) {
-            if (this.status == 200) {elmnt.innerHTML = this.responseText;}
-            if (this.status == 404) {elmnt.innerHTML = "Page not found.";}
-            /* Remove the attribute, and call this function once more: */
-            elmnt.removeAttribute("w3-include-html");
-            includeHTML();
-          }
-        }
-        xhttp.open("GET", file, true);
-        xhttp.send();
-        /* Exit the function: */
-        return;
-      }
-    }
-  }
-
-
-  // chart js config
-  const arrows = {
-    id:'arrows',
-    beforeInit(chart, args, plugins){
-        console.log("hello")
-        const fitValue  = chart.legend.fit;
-        chart.legend.fit =  function fit(){
-            fitValue.bind(chart.legend)();
-            return this.height +=40
+        elmnt = z[i];
+        /*search for elements with a certain atrribute:*/
+        file = elmnt.getAttribute("w3-include-html");
+        if (file) {
+            /* Make an HTTP request using the attribute value as the file name: */
+            xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4) {
+                    if (this.status == 200) { elmnt.innerHTML = this.responseText; }
+                    if (this.status == 404) { elmnt.innerHTML = "Page not found."; }
+                    /* Remove the attribute, and call this function once more: */
+                    elmnt.removeAttribute("w3-include-html");
+                    includeHTML();
+                }
+            }
+            xhttp.open("GET", file, true);
+            xhttp.send();
+            /* Exit the function: */
+            return;
         }
     }
 }
 
 
-const chartConfig =  {
+// chart js config
+const arrows = {
+    id: 'arrows',
+    beforeInit(chart, args, plugins) {
+        console.log("hello")
+        const fitValue = chart.legend.fit;
+        chart.legend.fit = function fit() {
+            fitValue.bind(chart.legend)();
+            return this.height += 40
+        }
+    }
+}
+
+
+const chartConfig = {
     plugins: [arrows],
     type: "line",
     data: {
@@ -256,36 +261,36 @@ const chartConfig =  {
     },
     options: {
         plugins: {
-            legend: {   
+            legend: {
                 display: true,
                 align: 'end'
-            }   
+            }
         },
         scales: {
-               
-         speed:{
+
+            speed: {
                 position: 'right',
-                min: 0, 
-                max:40,
-                ticks:{      
+                min: 0,
+                max: 40,
+                ticks: {
                     color: 'gray',
-                    font:{
+                    font: {
                         weight: 'bold',
-                        size:20
+                        size: 20
                     }
                 }
             },
-            direction:{
+            direction: {
                 position: 'right',
                 min: 0,
                 max: 8,
                 ticks: {
-                    callback: function(value, index, ticks) {
+                    callback: function (value, index, ticks) {
                         var x = ["S", "SW", "W", "NW", "N", "NE", "E", "SE", "S"];
                         return x[value % x.length];
                     },
                     color: 'blue',
-                    font:{
+                    font: {
                         weight: 'bold',
                         size: 20
                     },
