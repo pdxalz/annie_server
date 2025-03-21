@@ -1,7 +1,7 @@
 #  docker-compose up
 #   (cd to annie_server)
 #  docker build . -t annie_img
-#  docker run --rm -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.113 -v roosterpict:/rooster  annie_img
+#  docker run --rm -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.111 -v roosterpict:/rooster  annie_img
 #  docker ps -a
 #   docker system prune -a      (wipe out all data)
 #   sudo find / -name test.db   (find the location of the database)
