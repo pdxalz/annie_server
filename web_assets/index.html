@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <base href="__SERVER_URL__/web_assets/">
     <title>Sauvie Wind Data</title>
@@ -10,7 +11,7 @@
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
 
     <!--link rel="stylesheet" href="/web_assets/style.css"-->
     <link rel="stylesheet" href="style.css">
@@ -21,8 +22,8 @@
 
 <body class="w3-mobile">
     <div w3-include-html="header.html"></div>
-   
-<!-- 
+
+    <!-- 
  <div class="w3-container w3-center" style="background-color: red;">
         <h3>SENSOR DOWN FOR REPAIR</h3>
     </div>
@@ -45,7 +46,8 @@
             <div class="w3-container w3-center">
                 <h3>Useful Links:</h3>
                 <a href="history.html">Sauvie Wind History</a><br>
-                <a href="https://thegorgeismygym.com/forecast/">Temira's wind forecast for Jones and Sauvie Island</a><br>
+                <a href="https://thegorgeismygym.com/forecast/">Temira's wind forecast for Jones and Sauvie
+                    Island</a><br>
                 <a href="https://wx.ikitesurf.com/search/45.685/-122.724/10">iKitesurf wind map</a><br>
                 <a href="https://www.windy.com/?45.723,-122.816,12">Windy.com</a><br>
             </div>
@@ -62,14 +64,14 @@
             <div class="w3-container w3-center">
                 <h3>Tide Info</h3>
                 <h4>Knapp Landing,WA</h4>
-                <div class="w3-centered" id="tide-table" ></div>
+                <div class="w3-centered" id="tide-table"></div>
             </div>
         </div>
-        
+
         <div class="w3-card-4 w3-pale-blue">
             <div class="w3-container w3-center">
                 <h3>Today's Images</h3>
-                <div class="w3-centered" id="images_list" ></div>
+                <div class="w3-centered" id="images_list"></div>
             </div>
         </div>
     </div>
@@ -81,6 +83,7 @@
     </div>
     -->
 
+    <!--  PAYPAL DONATE BUTTON
     <div class="w3-panel w3-pale-blue">
         <p style="font-size:150%; text-align: center;">
             If you would like make a donation to help pay for the hardware and recurring costs,
@@ -95,6 +98,21 @@
             <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
         </form>
     </div>
+    -->
+
+    <div class="w3-container w3-center">
+        <h3>Donations are not needed at this time. For local surf gear, check out:</h3>
+    </div>
+
+    <!--Add link to gorgeperformance.com with a jpg from the site-->
+    <div class="w3-panel w3-pale-blue">
+        <a href="https://www.gorgeperformance.com/"><img src="/web_assets/gorgeperformance.jpg" alt="Gorge Performance"
+                style="width:auto; height:auto;"></a>
+    </div>
+
+    <div class="w3-container w3-center">
+        <h3>(Not an ad, I just like the shop)</h3>
+    </div>
 
     <script>
 
@@ -106,7 +124,7 @@
 
         //get today (PST)
         let date = new Date();
-        let options = {timeZone: 'America/Los_Angeles',dateStyle: 'short'};
+        let options = { timeZone: 'America/Los_Angeles', dateStyle: 'short' };
         let pacificCoastTime = date.toLocaleString('en-US', options);
 
         getData(new Date(Date.parse(pacificCoastTime)));
@@ -123,8 +141,8 @@
                 document.getElementById('water-temperature').innerHTML = '<h4>' + temperature + ' F</h4>';
             });
 
-         // Fetch the tide data from the API
-         fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=9440171&product=predictions&datum=mllw&time_zone=lst_ldt&units=english&interval=hilo&format=json')
+        // Fetch the tide data from the API
+        fetch('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?date=today&station=9440171&product=predictions&datum=mllw&time_zone=lst_ldt&units=english&interval=hilo&format=json')
             .then(response => response.json())
             .then(data => {
                 // Create the table
@@ -144,23 +162,23 @@
                     var date = new Date(prediction.t);
                     var time = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
                     var row = document.createElement('tr');
-                    [time, prediction.type, prediction.v.substring(0,4)].forEach(text => {
+                    [time, prediction.type, prediction.v.substring(0, 4)].forEach(text => {
                         var td = document.createElement('td');
                         td.textContent = text;
-                        td.style='width:150px';
+                        td.style = 'width:150px';
                         row.appendChild(td);
                     });
                     table.appendChild(row);
                 });
-                
-                table.setAttribute('class','w3-centered w3-striped center')
+
+                table.setAttribute('class', 'w3-centered w3-striped center')
                 // Add the table to the page
                 div = document.getElementById('tide-table');
                 div.appendChild(table);
 
             });
 
-            fetch('/list_images')
+        fetch('/list_images')
             .then(response => response.json())
             .then(data => {
                 const today = new Date();

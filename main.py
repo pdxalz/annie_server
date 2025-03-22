@@ -2,7 +2,7 @@
 #  docker-compose up 
 #   (cd to annie_server)
 #  docker build . -t annie_img
-#  docker run --rm -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.113 -v roosterpict:/rooster  annie_img
+#  docker run --rm -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.111 -v roosterpict:/rooster  annie_img
 #  docker ps -a
 #   docker system prune -a      (wipe out all data)
 #   sudo find / -name test.db   (find the location of the database)
@@ -16,7 +16,7 @@ import os
 import pathlib
 import pytz
 import shutil
-
+ 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pytz import timezone
@@ -245,7 +245,11 @@ async def read_index():
 
 def hours_minutes(time_str):
     datetime_obj = datetime.strptime(time_str, "%Y-%m-%d %H:%M")
-    return datetime_obj.strftime("%H:%M")
+    if (datetime_obj.strftime("%M") == '00'):
+        return datetime_obj.strftime("%-I:%M%p")
+    else:
+        return datetime_obj.strftime("%-I:%M")
+        
 
 def pst_to_utc(pst_time):
     pst_tz = pytz.timezone('America/Los_Angeles')
