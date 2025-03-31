@@ -79,16 +79,21 @@ class AutoPhoto:
 
 
 
-
+# Racknerd MQTT broker
+mqtt_host = os.environ.get("MQTT_HOST", "localhost") # Default fallback if needed
+mqtt_port = int(os.environ.get("MQTT_PORT", 1883))
+mqtt_username = os.environ.get("MQTT_USERNAME")
+mqtt_password = os.environ.get("MQTT_PASSWORD")
 
 # MQTT 
-MQTT_HOST = 'broker.hivemq.com'
-TOPIC_ALL = 'zimbuktu/#'
+#MQTT_HOST = 'broker.hivemq.com'
+MQTT_SUBSCRIBE_TOPIC = 'zimbuktu/#'
 TOPIC_WIND = 'zimbuktu/wind'
 TOPIC_COMMAND = 'zimbuktu/cmd'
 TOPIC_JPG_START = 'zimbuktu/jpgStart'
 TOPIC_JPG_END = 'zimbuktu/jpgEnd'
 TOPIC_JPG_DATA = 'zimbuktu/jpgData'
+MQTT_CLIENT_ID = "sauviewind_web_api_client"
 
 #Paths to static html related files, copied when server starts
 INDEX_HTML_PATH = 'web_assets/index.html'
@@ -259,13 +264,33 @@ def pst_to_utc(pst_time):
     utc_time = pst_time.astimezone(utc_tz)
     return utc_time.strftime("%Y-%m-%d %H:%M")
 
-def on_connect(client, userdata, flags, rc):
-    if rc == 0:
-        print('Connected'+str(client._client_id))
-        client.subscribe(TOPIC_ALL)
-    else:
-        print('Connection refused')
+# --- Callback Functions ---
 
+#def on_connect(client, userdata, flags, rc):
+#    if rc == 0:
+#        print('Connected'+str(client._client_id))
+#        client.subscribe(TOPIC_ALL)
+#    else:
+#        print('Connection refused')
+
+
+def on_connect(client, userdata, flags, rc):
+    """The callback for when the client receives a CONNACK response."""
+    if rc == 0:
+        print(f"Successfully connected to MQTT Broker with Client ID: {MQTT_CLIENT_ID}")
+        # Subscribe to the topic(s) *after* successful connection
+        # Use tuple for multiple topics: client.subscribe([("topic1", 0), ("topic2", 0)])
+        subscribe_result, mid = client.subscribe(MQTT_SUBSCRIBE_TOPIC, qos=1)
+        if subscribe_result == mqtt.MQTT_ERR_SUCCESS:
+            print(f"Successfully subscribed to topic: {MQTT_SUBSCRIBE_TOPIC}")
+        else:
+            print(f"Failed to subscribe to {MQTT_SUBSCRIBE_TOPIC}, error code: {subscribe_result}")
+    else:
+        print(f"Connection failed with error code: {rc}")
+        # Handle specific error codes if needed
+        # e.g., 3: Server unavailable, 4: Bad username/password, 5: Not authorized
+        if rc == 4 or rc == 5:
+             print("Please check MQTT_USERNAME and MQTT_PASSWORD environment variables.")
 
 
 
@@ -274,8 +299,9 @@ def on_message(client, userdata, message):
     """
         on received packet: the whole payload is python3 byte object
     """
-    #print('topic:', message.topic)
-    # print('payload:', message.payload)
+    print(f"****** Message Received ******")
+    print('topic:', message.topic)
+    print('payload:', message.payload)
     global num_bytes_in_image
     global num_bytes_received
     global last_percentage_printed 
@@ -306,12 +332,10 @@ def on_message(client, userdata, message):
         conn.close()
 
         auto_photo.capture_photo(jd["a"], jd["g"], 0, 0)
-            
 
     elif (message.topic == TOPIC_JPG_START):
-        
         num_bytes_received = 0
-        last_percentage_printed = 0 
+        last_percentage_printed = 0
         num_bytes_in_image = int(message.payload.decode('utf-8'))
         print(f'Start Image, bytes: {num_bytes_in_image}')
         if os.path.exists(TMPJPGFILE):
@@ -338,7 +362,7 @@ def on_message(client, userdata, message):
         print('.', end='', flush=True)
     else:
         print(message.payload)
-            
+
 
 
 
@@ -361,11 +385,32 @@ def has_correct_checksum(byte_array):
     # Return True if the calculated checksum matches the stored checksum, False otherwise
     return calculated_checksum == stored_checksum
 
+def on_subscribe(client, userdata, mid, granted_qos):
+    """Callback for when the subscription is acknowledged."""
+    print(f"Subscription acknowledged (MID: {mid}) with QoS: {granted_qos}")
+
+def on_disconnect(client, userdata, rc):
+    """Callback for when the client disconnects."""
+    print(f"Disconnected from MQTT Broker with result code: {rc}")
+    if rc != 0:
+        print("Unexpected disconnection.")
+        # Optional: Add reconnection logic here if needed,
+        # but be careful with loops in a web server context.
+
+
 def mqtt_client_init(client):
     client.on_connect = on_connect
     client.on_message = on_message
-    client.connect(host=MQTT_HOST, port=1883)
-    client.loop_start()
+    client.on_subscribe = on_subscribe
+    client.on_disconnect = on_disconnect
+#    client.connect(host=MQTT_HOST, port=1883)
+#    client.loop_start()
+    try:
+        print(f"Connecting to MQTT Broker at {mqtt_host}:{mqtt_port}")
+        client.connect(mqtt_host, mqtt_port, 60) # 60 second keepalive
+        client.loop_start() # Start background thread for processing network traffic
+    except Exception as e:
+        print(f"Error connecting to MQTT Broker: {e}")
 
 
 
@@ -463,7 +508,11 @@ for row in windy:
 cursor.close()
 conn.close()
 
-client = mqtt.Client()
+#client = mqtt.Client()
+client = mqtt.Client(client_id=MQTT_CLIENT_ID)
+if mqtt_username and mqtt_password:
+    client.username_pw_set(mqtt_username, mqtt_password)
+
 mqtt_client_init(client)
 
 
