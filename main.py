@@ -2,7 +2,7 @@
 #  docker-compose up 
 #   (cd to annie_server)
 #  docker build . -t annie_img
-#  docker run --rm -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.111 -v roosterpict:/rooster  annie_img
+#  docker run --rm -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.112 -v roosterpict:/rooster -e MQTT_HOST=107.174.172.150 -e MQTT_PORT=1883 -e MQTT_USERNAME=web_api -e MQTT_PASSWORD=SauvieKite9M   annie_img
 #  docker ps -a
 #   docker system prune -a      (wipe out all data)
 #   sudo find / -name test.db   (find the location of the database)
@@ -17,7 +17,8 @@ import os
 import pathlib
 import pytz
 import shutil
- 
+import random
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pytz import timezone
@@ -94,10 +95,8 @@ TOPIC_COMMAND = 'zimbuktu/cmd'
 TOPIC_JPG_START = 'zimbuktu/jpgStart'
 TOPIC_JPG_END = 'zimbuktu/jpgEnd'
 TOPIC_JPG_DATA = 'zimbuktu/jpgData'
-MQTT_CLIENT_ID = "sauviewind_web_api_client"
-
-
-
+# generate random client id
+MQTT_CLIENT_ID = f"mqtt_client_{random.randint(0, 10000)}"
 
 #Paths to static html related files, copied when server starts
 INDEX_HTML_PATH = 'web_assets/index.html'
