@@ -12,6 +12,7 @@ import sqlite3
 import json
 import datetime
 import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 import os
 import pathlib
 import pytz
@@ -72,7 +73,7 @@ class AutoPhoto:
     def capture_photo(self, direction, avg_wind, gusts, lull):
         if self.should_capture_photo(direction, avg_wind, gusts, lull):
             # Capture the photo
-            publish.single(TOPIC_COMMAND, "p5", hostname=MQTT_HOST)
+            publish_msg(TOPIC_COMMAND, "p5")
             self.last_photo_time = datetime.now()
             self.prev_avg_wind = avg_wind
             self.photo_count += 1
@@ -94,6 +95,9 @@ TOPIC_JPG_START = 'zimbuktu/jpgStart'
 TOPIC_JPG_END = 'zimbuktu/jpgEnd'
 TOPIC_JPG_DATA = 'zimbuktu/jpgData'
 MQTT_CLIENT_ID = "sauviewind_web_api_client"
+
+
+
 
 #Paths to static html related files, copied when server starts
 INDEX_HTML_PATH = 'web_assets/index.html'
@@ -147,11 +151,11 @@ def list_files():
 def take_image(size: str):
     topic = TOPIC_COMMAND
     if size == 'small':
-        publish.single(topic, "p2", hostname=MQTT_HOST)
+        publish_msg(topic, "p2")
     elif size == 'medium':
-        publish.single(topic, "p4", hostname=MQTT_HOST)
+        publish_msg(topic, "p4")
     elif size == 'large':
-        publish.single(topic, "p5", hostname=MQTT_HOST)
+        publish_msg(topic, "p5")
     else:
         return {"error": "Invalid size parameter"}
 
@@ -251,10 +255,10 @@ async def read_index():
 def hours_minutes(time_str):
     datetime_obj = datetime.strptime(time_str, "%Y-%m-%d %H:%M")
     if (datetime_obj.strftime("%M") == '00'):
-        return datetime_obj.strftime("%-I:%M%p")
+        return datetime_obj.strftime("%-I:%MPM")
     else:
         return datetime_obj.strftime("%-I:%M")
-        
+
 
 def pst_to_utc(pst_time):
     pst_tz = pytz.timezone('America/Los_Angeles')
@@ -263,6 +267,55 @@ def pst_to_utc(pst_time):
     pst_time = pst_tz.localize(pst_time_naive)
     utc_time = pst_time.astimezone(utc_tz)
     return utc_time.strftime("%Y-%m-%d %H:%M")
+
+def publish_msg(topic_to_publish, payload_to_send):
+    # --------------------------------------------------------------------
+
+    # Create the authentication dictionary
+    auth_dict = None
+    if mqtt_username and mqtt_password:
+        auth_dict = {'username': mqtt_username, 'password': mqtt_password}
+    else:
+        # Handle error: Your setup requires authentication, so this shouldn't be None
+        print("ERROR: Cannot publish - MQTT username or password not found in environment variables.")
+        # Add appropriate error handling here (e.g., raise an exception, log error)
+        # For now, we'll prevent the publish call if auth is missing
+        auth_dict = None # Explicitly set to None to make the check below clear
+
+
+    # Only attempt to publish if we have authentication details
+    if auth_dict and mqtt_host:
+        try:
+            print(f"Attempting to publish payload '{payload_to_send}' to topic '{topic_to_publish}' on {mqtt_host}:{mqtt_port} with user '{mqtt_username}'")
+
+            publish.single(
+                topic_to_publish,
+                payload=payload_to_send,
+                qos=1,  # Quality of Service (0, 1, or 2) - 1 is common
+                retain=False, # Should the broker keep the last message for new subscribers?
+                hostname=mqtt_host,
+                port=mqtt_port,
+                client_id="web_api_publisher", # Optional: Give the publisher a temporary ID
+                keepalive=60,
+                auth=auth_dict  # <-- *** THIS IS THE CRITICAL PART ***
+            )
+
+            print(f"Successfully published to topic '{topic_to_publish}'")
+
+        except Exception as e:
+            # Log the error for debugging
+            print(f"Failed to publish message to topic '{topic_to_publish}': {e}")
+            # Consider more specific error handling (e.g., for connection errors vs auth errors)
+
+    elif not auth_dict:
+        print(f"Skipping publish to topic '{topic_to_publish}': Missing authentication details.")
+    else: # implies MQTT_HOST is None
+        print(f"Skipping publish to topic '{topic_to_publish}': Missing MQTT_HOST.")
+
+
+
+
+
 
 # --- Callback Functions ---
 
