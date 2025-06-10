@@ -2,7 +2,7 @@
 #  docker-compose up 
 #   (cd to annie_server)
 #  docker build . -t annie_img
-#  docker run --rm -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.112 -v roosterpict:/rooster -e MQTT_HOST=107.174.172.150 -e MQTT_PORT=1883 -e MQTT_USERNAME=web_api -e MQTT_PASSWORD=SauvieKite9M   annie_img
+#  docker run --rm --name anniedock -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.112 -v roosterpict:/rooster -e MQTT_HOST=107.174.172.150 -e MQTT_PORT=1883 -e MQTT_USRNM=web_api -e MQTT_PSWD=SauvieKite9M   annie_img
 #  docker ps -a
 #   docker system prune -a      (wipe out all data)
 #   sudo find / -name test.db   (find the location of the database)
@@ -84,8 +84,8 @@ class AutoPhoto:
 # Racknerd MQTT broker
 mqtt_host = os.environ.get("MQTT_HOST", "localhost") # Default fallback if needed
 mqtt_port = int(os.environ.get("MQTT_PORT", 1883))
-mqtt_username = os.environ.get("MQTT_USERNAME")
-mqtt_password = os.environ.get("MQTT_PASSWORD")
+mqtt_username = os.environ.get("MQTT_USRNM")
+mqtt_password = os.environ.get("MQTT_PSWD")
 
 # MQTT 
 #MQTT_HOST = 'broker.hivemq.com'
@@ -342,7 +342,7 @@ def on_connect(client, userdata, flags, rc):
         # Handle specific error codes if needed
         # e.g., 3: Server unavailable, 4: Bad username/password, 5: Not authorized
         if rc == 4 or rc == 5:
-             print("Please check MQTT_USERNAME and MQTT_PASSWORD environment variables.")
+             print("Please check MQTT_USRNM and MQTT_PSWD environment variables.")
 
 
 
