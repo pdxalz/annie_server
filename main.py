@@ -11,6 +11,7 @@
 import sqlite3
 import json
 import datetime
+import itsdangerous
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import os
@@ -19,8 +20,10 @@ import pytz
 import shutil
 import random
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Form, File, UploadFile, Depends, HTTPException, status, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
 from pytz import timezone
 
 import smtplib
@@ -32,7 +35,7 @@ from fastapi.staticfiles import StaticFiles
 
 from starlette.responses import FileResponse 
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Dict, Any
 import paho.mqtt.publish as publish
 
 
@@ -96,17 +99,24 @@ TOPIC_JPG_START = 'zimbuktu/jpgStart'
 TOPIC_JPG_END = 'zimbuktu/jpgEnd'
 TOPIC_JPG_DATA = 'zimbuktu/jpgData'
 # generate random client id
-MQTT_CLIENT_ID = f"mqtt_client_{random.randint(0, 10000)}"
+MQTT_CLIENT_ID = f"mqtt_client_{random.randint(0, 10000)}" 
 
-#Paths to static html related files, copied when server starts
-INDEX_HTML_PATH = 'web_assets/index.html'
-ROOSTERCAM_HTML_PATH = 'web_assets/roostercam.html'
+APP_ROOT = pathlib.Path(__file__).parent
+
+# Paths to static html related files, copied when server starts
+INDEX_HTML_PATH = APP_ROOT / 'web_assets/index.html'
+ROOSTERCAM_HTML_PATH = APP_ROOT / 'web_assets/roostercam.html'
 
 #Paths to non-voliatile data, they exist outside of docker container
-DATABASE = "/winddata/test.db" 
+WIND_DATABASE = "/winddata/test.db" 
 TMPJPGFILE = "/winddata/temp.jpg"
 IMAGE_PATH = "/winddata/images"
 ROOSTERJPGFILE = "/rooster/camera0.jpg"
+
+# --- Reunion Website Configuration ---
+REUNION_DB = "/winddata/reunion.db"
+UPLOADS_DIR = "/winddata/uploads"
+SECRET_KEY = "clhs_1975_reunion" # IMPORTANT: Change this!
 
 last_image_date = 'No Images'
 auto_photo = AutoPhoto()
@@ -118,6 +128,8 @@ num_bytes_in_image = 1
 last_percentage_printed = 0
 
 app = FastAPI()
+templates = Jinja2Templates(directory=APP_ROOT / "templates")
+signer = itsdangerous.URLSafeTimedSerializer(SECRET_KEY)
 
 origins = [
     'null',
@@ -137,8 +149,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/web_assets", StaticFiles(directory="web_assets"), name="web_assets")
+app.mount("/web_assets", StaticFiles(directory=APP_ROOT / "web_assets"), name="web_assets")
 app.mount("/images", StaticFiles(directory=IMAGE_PATH), name="images")
+app.mount("/static", StaticFiles(directory=APP_ROOT / "static"), name="static")
+app.mount("/uploads", StaticFiles(directory=UPLOADS_DIR), name="uploads")
 app.mount("/rooster", StaticFiles(directory='/rooster'), name="rooster")
 
 @app.get("/list_images")
@@ -179,7 +193,7 @@ def roostercam():
 
 @app.get("/wind")
 def root(day: Optional[str] = None):
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(WIND_DATABASE)
     cursor = conn.cursor()
 
     if day is not None:
@@ -215,7 +229,7 @@ def root(day: Optional[str] = None):
 
 @app.get("/first_date")
 def get_first_date():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(WIND_DATABASE)
     cursor = conn.cursor()
 
     # Execute the query
@@ -249,6 +263,141 @@ async def get_image_date():
 async def read_index():
     return FileResponse(INDEX_HTML_PATH)
 
+# ==============================================================================
+# == REUNION WEBSITE API                                                      ==
+# ==============================================================================
+
+reunion_router = APIRouter()
+
+def get_reunion_db():
+    db = sqlite3.connect(REUNION_DB)
+    db.row_factory = sqlite3.Row
+    return db
+
+async def get_current_user(request: Request) -> Optional[Dict[str, Any]]:
+    session_cookie = request.cookies.get("reunion_session")
+    if not session_cookie:
+        return None
+    try:
+        data = signer.loads(session_cookie, max_age=3600 * 24) # 24-hour session
+        return data
+    except (itsdangerous.BadTimeSignature, itsdangerous.SignatureExpired):
+        return None
+
+async def require_login(request: Request):
+    user = await get_current_user(request)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_303_SEE_OTHER,
+            headers={"Location": str(request.url_for('login'))},
+        )
+    return user
+
+@reunion_router.get("/", response_class=HTMLResponse, name="reunion_index")
+async def reunion_home(request: Request, current_user: Optional[dict] = Depends(get_current_user)):
+    return templates.TemplateResponse("index.html", {"request": request, "current_user": current_user})
+
+@reunion_router.get("/login", response_class=HTMLResponse, name="login")
+async def login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@reunion_router.post("/login", name="login")
+async def handle_login(request: Request, full_name: str = Form(...), secret_fact: str = Form(...)):
+    db = get_reunion_db()
+    student = db.execute(
+        "SELECT * FROM students WHERE full_name = ? AND secret_fact = ?",
+        (full_name, secret_fact)
+    ).fetchone()
+    db.close()
+
+    if student:
+        session_data = {
+            "id": student["id"],
+            "full_name": student["full_name"],
+            "is_admin": student["full_name"] == "Reunion Admin"
+        }
+        response = RedirectResponse(url=request.url_for('students_page'), status_code=status.HTTP_303_SEE_OTHER)
+        session_cookie = signer.dumps(session_data)
+        response.set_cookie(key="reunion_session", value=session_cookie, httponly=True)
+        return response
+    else:
+        # In a real app, you'd flash a message. For simplicity, we redirect with a query param.
+        return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid name or secret fact."})
+
+@reunion_router.get("/logout", name="logout")
+async def logout(request: Request):
+    response = RedirectResponse(url=request.url_for('login'), status_code=status.HTTP_303_SEE_OTHER)
+    response.delete_cookie("reunion_session")
+    return response
+
+@reunion_router.get("/students", response_class=HTMLResponse, name="students_page")
+async def students_page(request: Request, current_user: dict = Depends(require_login)):
+    db = get_reunion_db()
+    all_students = db.execute("SELECT * FROM students ORDER BY full_name").fetchall()
+    db.close()
+    return templates.TemplateResponse("students.html", {"request": request, "students": all_students, "current_user": current_user})
+
+
+@reunion_router.get("/edit/{student_id}", response_class=HTMLResponse, name="edit_profile")
+async def edit_profile_page(request: Request, student_id: int, current_user: dict = Depends(require_login)):
+    if not current_user["is_admin"] and current_user["id"] != student_id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this profile")
+
+    db = get_reunion_db()
+    student_to_edit = db.execute(
+        "SELECT * FROM students WHERE id = ?", (student_id,)
+    ).fetchone()
+    db.close()
+
+    if not student_to_edit:
+        raise HTTPException(status_code=404, detail="Student not found")
+
+    return templates.TemplateResponse("edit_profile.html", {"request": request, "student": student_to_edit, "current_user": current_user})
+
+@reunion_router.post("/edit/{student_id}", name="edit_profile")
+async def handle_edit_profile(
+    request: Request,
+    student_id: int,
+    attendance_status: str = Form(...),
+    guests: int = Form(...),
+    biography: str = Form(...),
+    photo: UploadFile = File(None),
+    current_user: dict = Depends(require_login)
+):
+    if not current_user["is_admin"] and current_user["id"] != student_id:
+        raise HTTPException(status_code=403, detail="Not authorized to edit this profile")
+
+    db = get_reunion_db()
+
+    # Handle file upload
+    if photo and photo.filename:
+        # Basic security check for file extension
+        if photo.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+            # Sanitize filename to prevent directory traversal attacks
+            safe_filename = os.path.basename(photo.filename)
+            filename = f"student_{student_id}_{safe_filename}"
+            file_path = os.path.join(UPLOADS_DIR, filename)
+
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(photo.file, buffer)
+
+            db.execute(
+                "UPDATE students SET photo_filename = ? WHERE id = ?", (filename, student_id)
+            )
+
+    # Update other database fields
+    db.execute(
+        """UPDATE students SET status = ?, guests = ?, biography = ?
+           WHERE id = ?""",
+        (attendance_status, guests, biography, student_id),
+    )
+    db.commit()
+    db.close()
+
+    return RedirectResponse(url=request.url_for('students_page'), status_code=status.HTTP_303_SEE_OTHER)
+
+# Include the reunion router in the main FastAPI app
+app.include_router(reunion_router, prefix="/clhs1975", tags=["Reunion"])
 
 
 def hours_minutes(time_str):
@@ -364,11 +513,11 @@ def on_message(client, userdata, message):
 
 
         val = (jd["t"], jd["d"], jd["a"], jd["g"], jd["l"])
-        conn = sqlite3.connect(DATABASE)
+        conn = sqlite3.connect(WIND_DATABASE)
         cursor = conn.cursor()
 
         val = (jd["t"], jd["d"], jd["a"], jd["g"], jd["l"])
-        conn = sqlite3.connect(DATABASE)
+        conn = sqlite3.connect(WIND_DATABASE)
         cursor = conn.cursor()
 
         # Convert the time to the desired format and adjust the timezone from UTC to PST
@@ -522,7 +671,7 @@ def send_email(sender_email, sender_password, receiver_email, subject, body, att
 
 
 
-conn = sqlite3.connect(DATABASE)
+conn = sqlite3.connect(WIND_DATABASE)
 
 cursor = conn.cursor()
 
@@ -566,6 +715,3 @@ if mqtt_username and mqtt_password:
     client.username_pw_set(mqtt_username, mqtt_password)
 
 mqtt_client_init(client)
-
-
-
