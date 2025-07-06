@@ -22,7 +22,7 @@
     </div>
 
     <div class="mb-3">
-        <label for="guests" class="form-label">Number of Guests (besides yourself)</label>
+        <label for="guests" class="form-label">Total Coming (including yourself)</label>
         <input type="number" class="form-control" id="guests" name="guests" value="{{ student.guests }}" min="0"
             max="5">
     </div>
@@ -33,12 +33,26 @@
     </div>
 
     <div class="mb-3">
-        <label for="photo" class="form-label">Update Photo</label>
-        <input class="form-control" type="file" id="photo" name="photo" accept="image/png, image/jpeg, image/gif">
-        {% if student.photo_filename %}
-        <div class="mt-2">
-            <p>Current Photo:</p>
-            <img src="{{ request.url_for('uploads', path=student.photo_filename) }}" alt="Current photo" style="max-width: 200px; border-radius: 5px;">
+        <label for="photos" class="form-label">My Photos (up to 5 total)</label>
+        <input class="form-control" type="file" id="photos" name="photos" accept="image/png, image/jpeg, image/gif" multiple>
+        <small class="form-text text-muted">You can select multiple files to upload. The total number of photos cannot exceed five.</small>
+
+        {% if student.photos %}
+        <p class="mt-4"><strong>Current Photos</strong></p>
+        <div class="row">
+            {% for photo in student.photos %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                <div class="card h-100">
+                    <img src="{{ request.url_for('uploads', path=photo.filename) }}" class="card-img-top" alt="Photo of {{ student.full_name }}">
+                    <div class="card-body text-center">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="delete_photos" value="{{ photo.id }}" id="delete_photo_{{ photo.id }}">
+                            <label class="form-check-label" for="delete_photo_{{ photo.id }}">Mark for deletion</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
         {% endif %}
     </div>

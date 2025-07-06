@@ -15,6 +15,8 @@ import itsdangerous
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import os
+import secrets
+from typing import List
 import pathlib
 import pytz
 import shutil
@@ -333,26 +335,51 @@ async def logout(request: Request):
 @reunion_router.get("/students", response_class=HTMLResponse, name="students_page")
 async def students_page(request: Request, current_user: dict = Depends(require_login)):
     db = get_reunion_db()
-    all_students = db.execute("SELECT * FROM students ORDER BY full_name").fetchall()
+
+    # Fetch all students and convert to a list of dictionaries
+    students_rows = db.execute("SELECT * FROM students ORDER BY full_name").fetchall()
+    students_list = [dict(row) for row in students_rows]
+
+    # Create a dictionary for quick lookups by student ID
+    students_dict = {student['id']: student for student in students_list}
+
+    # Initialize a photos list for each student to ensure the key exists
+    for student in students_list:
+        student['photos'] = []
+
+    # Fetch all photos and append them to the correct student
+    all_photos = db.execute("SELECT * FROM photos ORDER BY student_id, id").fetchall()
+    for photo in all_photos:
+        student_id = photo['student_id']
+        if student_id in students_dict:
+            students_dict[student_id]['photos'].append(dict(photo))
+
     db.close()
-    return templates.TemplateResponse("students.html", {"request": request, "students": all_students, "current_user": current_user})
+    return templates.TemplateResponse("students.html", {"request": request, "students": students_list, "current_user": current_user})
 
 
 @reunion_router.get("/edit/{student_id}", response_class=HTMLResponse, name="edit_profile")
 async def edit_profile_page(request: Request, student_id: int, current_user: dict = Depends(require_login)):
     if not current_user["is_admin"] and current_user["id"] != student_id:
-        raise HTTPException(status_code=403, detail="Not authorized to edit this profile")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this profile")
 
     db = get_reunion_db()
     student_to_edit = db.execute(
         "SELECT * FROM students WHERE id = ?", (student_id,)
     ).fetchone()
+    photos = db.execute(
+        "SELECT * FROM photos WHERE student_id = ? ORDER BY id", (student_id,)
+    ).fetchall()
     db.close()
 
     if not student_to_edit:
         raise HTTPException(status_code=404, detail="Student not found")
 
-    return templates.TemplateResponse("edit_profile.html", {"request": request, "student": student_to_edit, "current_user": current_user})
+    # Convert Row to dict to attach photos for the template
+    student_data = dict(student_to_edit)
+    student_data["photos"] = photos
+
+    return templates.TemplateResponse("edit_profile.html", {"request": request, "student": student_data, "current_user": current_user})
 
 @reunion_router.post("/edit/{student_id}", name="edit_profile")
 async def handle_edit_profile(
@@ -361,36 +388,74 @@ async def handle_edit_profile(
     attendance_status: str = Form(...),
     guests: int = Form(...),
     biography: str = Form(...),
-    photo: UploadFile = File(None),
     current_user: dict = Depends(require_login)
 ):
     if not current_user["is_admin"] and current_user["id"] != student_id:
-        raise HTTPException(status_code=403, detail="Not authorized to edit this profile")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not authorized to edit this profile")
 
     db = get_reunion_db()
+    form_data = await request.form()
+    photos_to_delete_ids = form_data.getlist("delete_photos")
+    new_photos: List[UploadFile] = [f for f in form_data.getlist("photos") if f.filename]
 
-    # Handle file upload
-    if photo and photo.filename:
-        # Basic security check for file extension
-        if photo.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
-            # Sanitize filename to prevent directory traversal attacks
-            safe_filename = os.path.basename(photo.filename)
-            filename = f"student_{student_id}_{safe_filename}"
-            file_path = os.path.join(UPLOADS_DIR, filename)
+    # --- Photo Limit Validation ---
+    current_photo_count = db.execute("SELECT COUNT(id) FROM photos WHERE student_id = ?", (student_id,)).fetchone()[0]
+    if current_photo_count - len(photos_to_delete_ids) + len(new_photos) > 5:
+        student_to_edit = db.execute("SELECT * FROM students WHERE id = ?", (student_id,)).fetchone()
+        photos = db.execute("SELECT * FROM photos WHERE student_id = ? ORDER BY id", (student_id,)).fetchall()
+        db.close()
+        student_data = dict(student_to_edit)
+        student_data["photos"] = photos
+        return templates.TemplateResponse(
+            "edit_profile.html",
+            {
+                "request": request,
+                "student": student_data,
+                "current_user": current_user,
+                "error": "Cannot save. A student profile cannot have more than 5 photos."
+            },
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
 
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(photo.file, buffer)
+    # --- Delete Marked Photos ---
+    if photos_to_delete_ids:
+        placeholders = ','.join('?' for _ in photos_to_delete_ids)
+        # First, get filenames to delete from disk
+        cursor = db.execute(f"SELECT filename FROM photos WHERE id IN ({placeholders}) AND student_id = ?", (*photos_to_delete_ids, student_id))
+        for row in cursor.fetchall():
+            try:
+                os.remove(os.path.join(UPLOADS_DIR, row['filename']))
+            except OSError as e:
+                print(f"Error deleting file {row['filename']}: {e}") # Log error
+        # Then, delete from database
+        db.execute(f"DELETE FROM photos WHERE id IN ({placeholders}) AND student_id = ?", (*photos_to_delete_ids, student_id))
 
-            db.execute(
-                "UPDATE students SET photo_filename = ? WHERE id = ?", (filename, student_id)
-            )
+    # --- Save New Photos ---
+    for photo_file in new_photos:
+        if photo_file.filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+            random_hex = secrets.token_hex(8)
+            _, f_ext = os.path.splitext(photo_file.filename)
+            new_filename = f"{random_hex}{f_ext}"
+            file_path = os.path.join(UPLOADS_DIR, new_filename)
 
-    # Update other database fields
+            try:
+                with open(file_path, "wb") as buffer:
+                    shutil.copyfileobj(photo_file.file, buffer)
+                db.execute(
+                    "INSERT INTO photos (filename, student_id) VALUES (?, ?)",
+                    (new_filename, student_id)
+                )
+            except Exception as e:
+                print(f"Error saving file {new_filename}: {e}") # Log error
+                # Consider how to handle partial failures
+
+    # --- Update Other Student Info ---
     db.execute(
         """UPDATE students SET status = ?, guests = ?, biography = ?
            WHERE id = ?""",
         (attendance_status, guests, biography, student_id),
     )
+
     db.commit()
     db.close()
 

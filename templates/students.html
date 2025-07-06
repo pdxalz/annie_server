@@ -4,8 +4,7 @@
 
 {% block content %}
 <h2>CLHS '75 Student Directory</h2>
-<p>Here is the latest on our classmates. You can update your own information, or if you are the admin, you can update
-    anyone's.</p>
+<p>Here is the latest on our classmates. Please update your information.</p>
 
 <div class="list-group">
     {% for student in students %}
@@ -25,26 +24,28 @@
                 {% endif %}
             </div>
         </div>
-        <div class="row mt-2">
-            <div class="col-md-2">
-                {% if student.photo_filename %}
-                <img src="{{ request.url_for('uploads', path=student.photo_filename) }}" class="img-fluid rounded"
-                    alt="Photo of {{ student.full_name }}">
-                {% else %}
-                <div
-                    class="img-placeholder d-flex align-items-center justify-content-center bg-light text-muted rounded">
-                    <small>No Photo</small>
+        <p class="mb-2 mt-2"><em>{{ student.biography or 'No biography provided.' }}</em></p>
+
+        {% if student.photos %}
+        <div class="mt-2">
+            <div class="row g-2">
+                {% for photo in student.photos %}
+                <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                    <a href="{{ request.url_for('uploads', path=photo.filename) }}" target="_blank"
+                        title="View full size">
+                        <img src="{{ request.url_for('uploads', path=photo.filename) }}" class="img-thumbnail"
+                            alt="Photo of {{ student.full_name }}">
+                    </a>
                 </div>
-                {% endif %}
-            </div>
-            <div class="col-md-10">
-                <p class="mb-2"><em>{{ student.biography or 'No biography provided.' }}</em></p>
-                {% if current_user and (current_user.is_admin or current_user.id == student.id) %}
-                <a href="{{ request.url_for('edit_profile', student_id=student.id) }}"
-                    class="btn btn-sm btn-outline-primary">Edit Profile</a>
-                {% endif %}
+                {% endfor %}
             </div>
         </div>
+        {% endif %}
+
+        {% if current_user and (current_user.is_admin or current_user.id == student.id) %}
+        <a href="{{ request.url_for('edit_profile', student_id=student.id) }}"
+            class="btn btn-sm btn-outline-primary mt-3">Edit Profile</a>
+        {% endif %}
     </div>
     {% endif %}
     {% endfor %}
