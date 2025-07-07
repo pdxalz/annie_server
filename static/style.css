@@ -4,3 +4,11 @@
     /* Adjust as needed */
     border: 1px dashed #ccc;
 }
+
+/* Fix for Summernote's dialogs appearing behind the Bootstrap navbar or other elements */
+.note-editor .note-modal {
+  z-index: 1050; /* Ensure it's on top */
+}
+.note-editor .note-dialog {
+  z-index: 1051;
+}

@@ -20,6 +20,7 @@ from typing import List
 import pathlib
 import pytz
 import shutil
+import bleach
 import random
 
 from fastapi import FastAPI, Request, Form, File, UploadFile, Depends, HTTPException, status, APIRouter
@@ -450,10 +451,24 @@ async def handle_edit_profile(
                 # Consider how to handle partial failures
 
     # --- Update Other Student Info ---
+    # Sanitize the biography HTML to allow only safe tags and attributes
+    allowed_tags = [
+        'p', 'br', 'b', 'i', 'u', 'strong', 'em', 'a',
+        'ul', 'ol', 'li'
+    ]
+    allowed_attributes = {
+        'a': ['href', 'title', 'target']
+    }
+    sanitized_biography = bleach.clean(
+        biography,
+        tags=allowed_tags,
+        attributes=allowed_attributes,
+        strip=True  # Remove disallowed tags completely
+    )
     db.execute(
         """UPDATE students SET status = ?, guests = ?, biography = ?
            WHERE id = ?""",
-        (attendance_status, guests, biography, student_id),
+        (attendance_status, guests, sanitized_biography, student_id),
     )
 
     db.commit()
