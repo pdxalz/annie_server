@@ -25,6 +25,7 @@ import random
 
 from fastapi import FastAPI, Request, Form, File, UploadFile, Depends, HTTPException, status, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.proxy_headers import ProxyHeadersMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pytz import timezone
@@ -131,6 +132,12 @@ num_bytes_in_image = 1
 last_percentage_printed = 0
 
 app = FastAPI()
+
+# This middleware is crucial for running behind a reverse proxy (like Nginx or Caddy)
+# that handles TLS termination. It tells FastAPI to trust headers like `X-Forwarded-Proto`,
+# which ensures that `request.url_for` generates HTTPS URLs when appropriate.
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
+
 templates = Jinja2Templates(directory=APP_ROOT / "templates")
 signer = itsdangerous.URLSafeTimedSerializer(SECRET_KEY)
 
@@ -321,7 +328,17 @@ async def handle_login(request: Request, full_name: str = Form(...), secret_fact
         }
         response = RedirectResponse(url=request.url_for('students_page'), status_code=status.HTTP_303_SEE_OTHER)
         session_cookie = signer.dumps(session_data)
-        response.set_cookie(key="reunion_session", value=session_cookie, httponly=True)
+
+        # When deploying to a real server with HTTPS, cookies should be marked as 'secure'.
+        # We can check an environment variable to determine if we're in a secure context.
+        is_secure_env = os.environ.get("SERVER_URL", "").startswith("https")
+        response.set_cookie(
+            key="reunion_session",
+            value=session_cookie,
+            httponly=True,
+            secure=is_secure_env,
+            samesite='lax'
+        )
         return response
     else:
         # In a real app, you'd flash a message. For simplicity, we redirect with a query param.
