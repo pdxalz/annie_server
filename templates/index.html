@@ -3,12 +3,16 @@
 {% block title %}Reunion Home{% endblock %}
 
 {% block content %}
-<div class="p-5 mb-4 bg-light rounded-3">
-  <div class="container-fluid py-5">
-    <h1 class="display-5 fw-bold">Concordia Lutheran High School Class of 1975</h1>
-    <p class="col-md-8 fs-4">Join us for our 50th Reunion!</p>
-    <p>It's hard to believe it's been 50 years. Let's reconnect, reminisce, and make new memories.</p>
-    <a href="{{ request.url_for('login') }}" class="btn btn-primary btn-lg" type="button">Student Login to RSVP</a>
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="p-5 mb-4 bg-light rounded-3">
+      <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Concordia Lutheran High School Class of 1975</h1>
+        <p class="fs-4">Join us for our 50th Reunion!</p>
+        <p>It's hard to believe it's been 50 years. Let's reconnect, reminisce, and make new memories.</p>
+        <a href="{{ request.url_for('login') }}" class="btn btn-primary btn-lg" type="button">Student Login to RSVP</a>
+      </div>
+    </div>
   </div>
 </div>
 

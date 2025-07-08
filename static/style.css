@@ -1,14 +1,16 @@
-.img-placeholder {
-    width: 100%;
-    height: 120px;
-    /* Adjust as needed */
-    border: 1px dashed #ccc;
+body {
+    background-color: rgb(32, 64, 158);
+    color: white;
 }
 
-/* Fix for Summernote's dialogs appearing behind the Bootstrap navbar or other elements */
-.note-editor .note-modal {
-  z-index: 1050; /* Ensure it's on top */
-}
-.note-editor .note-dialog {
-  z-index: 1051;
+/*
+  Since the body text is now white, we need to reset the text color
+  for Bootstrap components that have their own light-colored backgrounds
+  to ensure text remains readable.
+*/
+.list-group-item,
+.list-group-item-action,
+.card,
+.bg-light {
+    color: #212529; /* A common Bootstrap text color */
 }
