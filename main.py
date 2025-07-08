@@ -25,7 +25,7 @@ import random
 
 from fastapi import FastAPI, Request, Form, File, UploadFile, Depends, HTTPException, status, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.middleware.proxy_headers import ProxyHeadersMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pytz import timezone
