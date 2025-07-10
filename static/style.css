@@ -1,16 +1,22 @@
-body {
-    background-color: rgb(32, 64, 158);
-    color: white;
+/* Make menu text brighter */
+.navbar-dark .navbar-nav .nav-link {
+    color: #c2f1f1; /* Light gray */
 }
 
-/*
-  Since the body text is now white, we need to reset the text color
-  for Bootstrap components that have their own light-colored backgrounds
-  to ensure text remains readable.
-*/
-.list-group-item,
-.list-group-item-action,
-.card,
-.bg-light {
-    color: #212529; /* A common Bootstrap text color */
+/* Make text on edit profile page lighter */
+body {
+    background-color: rgb(32, 64, 158);
+    color: #ddd;
+}
+
+.form-label {
+    color: #ddd;
+}
+
+.form-text {
+    color: #c2f1f1;
+}
+
+.text-muted {
+    color: #c2f1f1 !important;
 }
