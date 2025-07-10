@@ -4,12 +4,15 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-8">
-    <div class="p-5 mb-4 bg-light rounded-3">
-      <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold">Concordia Lutheran High School Class of 1975</h1>
-        <p class="fs-4">Join us for our 50th Reunion!</p>
-        <p>It's hard to believe it's been 50 years. Let's reconnect, reminisce, and make new memories.</p>
+  <div class="p-5 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-5">
+      <h2 class="display-5 fw-bold" style="color: black; text-align: center;">Concordia Lutheran High School</h2>
+      <h1 class="display-5 fw-bold" style="color: black; text-align: center;">Class of 1975</h1>
+      <p class="fs-4" style="color: black; text-align: center;">Join us for our 50 Year Reunion!</p>
+      <p style="color: black; text-align: center;">It's hard to believe it's been 50 years. Let's reconnect, reminisce,
+        and make new
+        memories.</p>
+      <div class="text-center">
         <a href="{{ request.url_for('login') }}" class="btn btn-primary btn-lg" type="button">Student Login to RSVP</a>
       </div>
     </div>
@@ -17,21 +20,38 @@
 </div>
 
 <div class="row">
-  <div class="col-md-6">
-    <h2>Event Details</h2>
-    <p><strong>Date:</strong> Saturday, October 11th, 2025</p>
-    <p><strong>Time:</strong> 6:00 PM - 11:00 PM</p>
-    <p><strong>Location:</strong> The Grand Ballroom, 123 Main Street, Anytown</p>
-    <p><strong>Dress Code:</strong> Smart Casual</p>
+  <div class="p-3 mb-2 bg-white text-dark rounded-3 d-inline-block">
+    <p style="font-size: 1.5em;"><strong>Date:</strong> FRIDAY, AUGUST 1, 2025</p>
+    <p style="font-size: 1.5em;"><strong>Time:</strong> 4:00 PM - 7:00 PM</p>
+    <p style="font-size: 1.5em;"><strong>Location:</strong> <a href="https://www.google.com/maps/place/3328+SE+Lambert+St,+Portland,+OR+97202" target="_blank">Allison & Alan's home</a>, 3328 SE Lambert St. Portland, OR 
+    </p>
+
+    <p style="font-size: 1.5em;">Informal get together. We plan to have a taco bar and soft drinks. </p>
+    <p style="font-size: 1.5em;">CLHS 1975 trivia game at 6:00 PM.</p>
+    <p style="font-size: 1.5em;">BYOB. (Bring your own Beer or Wine)</p>
+    <p style="font-size: 1.5em;"></p>
   </div>
-  <div class="col-md-6">
-    <h2>Schedule</h2>
-    <ul>
-      <li><strong>6:00 PM - 7:00 PM:</strong> Cocktail Hour & Mingling</li>
-      <li><strong>7:00 PM - 8:30 PM:</strong> Dinner</li>
-      <li><strong>8:30 PM - 9:00 PM:</strong> Welcome & Remarks</li>
-      <li><strong>9:00 PM - 11:00 PM:</strong> Music, Dancing, and Catching Up</li>
-    </ul>
+</div>
+
+<div class="row">
+  <div class="p-3 mb-2 bg-white text-dark rounded-3 d-inline-block">
+    <h2 style="font-size: 1.7em;">MULTI-CLASS CONCORDIA COLLEGE/UNIVERSITY & HIGH SCHOOL EVENTS</h2>
+    <p style="font-size: 1.2em;"><strong>FRIDAY, AUGUST 1</strong></p>
+    <p style="font-size: 1.2em;">6:00-10:00 pm Meet & Greet at Trinity Lutheran School Gym<br>5520 NE Killingsworth St
+      Portland</p>
+    <p style="font-size: 1.2em;"><strong>SATURDAY, AUGUST 2</strong></p>
+    <p style="font-size: 1.2em;">7:00-9:00 am Golf Tournament at Colwood Golf Center</p>
+    <p style="font-size: 1.2em;">9:00-12:00 am Meet & Greet, Breakfast/Brunch/Pastries<br>Devotional Service (similar to
+      chapel at Concordia)<br>St. Michael’s Lutheran Church 6700 NE 29th Ave</p>
+    <p style="font-size: 1.2em;">11:00 am-12:30 pm University of Oregon (formerly Concordia) Campus Tours</p>
+    <p style="font-size: 1.2em;">1:00-2:00 pm Choir Practice (to sing for St. Michael’s Worship on Sunday, August 3)</p>
+    <p style="font-size: 1.2em;">1:00-4:00 pm Picnic on St. Michael’s lawn</p>
+    <p style="font-size: 1.2em;">5:00-10:00 pm Barbecue Dinner & After Party at Carla & Dan Vasholtz Carlson’s
+      home<br>2701 NE 91st Way Vancouver WA</p>
+    <p style="font-size: 1.2em;"><strong>SUNDAY, AUGUST 3</strong></p>
+    <p style="font-size: 1.2em;">10:00-11:00 am Sunday Worship at St. Michael’s Lutheran Church<br>with choir
+      participation</p>
+    <p style="font-size: 1.2em;">11:00am-1:00 pm Meet & Greet, muffins in St. Michael’s Fellowship<br>See ya!</p>
   </div>
 </div>
 {% endblock %}
