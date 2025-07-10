@@ -355,7 +355,7 @@ async def students_page(request: Request, current_user: dict = Depends(require_l
     db = get_reunion_db()
 
     # Fetch all students and convert to a list of dictionaries
-    students_rows = db.execute("SELECT * FROM students").fetchall()
+    students_rows = db.execute("SELECT * FROM students WHERE full_name != 'Reunion Admin'").fetchall()
     students_list = [dict(row) for row in students_rows]
 
     # Create a dictionary for quick lookups by student ID
@@ -374,29 +374,14 @@ async def students_page(request: Request, current_user: dict = Depends(require_l
 
     db.close()
 
-    # Separate students into active and deceased lists. Photos are already attached.
-    active_students = []
-    deceased_students = []
-    for student in students_list:
-        if student['full_name'] == 'Reunion Admin':
-            continue  # Exclude admin from the directory view
-        if student['status'] == 'Deceased':
-            deceased_students.append(student)
-        else:
-            active_students.append(student)
-
-    # Sort each list by last name
+    # Sort students by last name
     def get_last_name(student):
         return student['full_name'].split(' ')[-1]
 
-    active_students.sort(key=get_last_name)
-    deceased_students.sort(key=get_last_name)
+    students_list.sort(key=get_last_name)
 
     return templates.TemplateResponse("students.html", {
-        "request": request,
-        "active_students": active_students,
-        "deceased_students": deceased_students,
-        "current_user": current_user
+        "request": request, "students": students_list, "current_user": current_user
     })
 
 
