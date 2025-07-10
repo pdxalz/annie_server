@@ -21,7 +21,7 @@ cursor.execute("""
 CREATE TABLE students (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     full_name TEXT NOT NULL UNIQUE,
-    secret_fact TEXT NOT NULL,
+    password TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'No Response',
     guests INTEGER DEFAULT 0,
     biography TEXT
@@ -99,10 +99,10 @@ students_to_add = [
 print("Populating database...")
 
 for student in students_to_add:
-    name, fact, bio = student
+    name, password, bio = student
     cursor.execute(
-        "INSERT INTO students (full_name, secret_fact, biography) VALUES (?, ?, ?)",
-        (name, fact, bio)
+        "INSERT INTO students (full_name, password, biography) VALUES (?, ?, ?)",
+        (name, password, bio)
     )
 
 conn.commit()

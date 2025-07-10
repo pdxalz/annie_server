@@ -9,7 +9,8 @@
     <div class="mb-3">
         <label for="attendance_status" class="form-label">Attendance Status</label>
         <select class="form-select" id="attendance_status" name="attendance_status">
-            <option value="Coming" {% if student.status=='Coming' %}selected{% endif %}>Yes, I'm coming!</option>
+            <option value="Coming" {% if student.status == 'Coming' %}selected{% endif %}>Yes, I'm coming!</option>
+                <button type="submit" formaction="{{ request.url_for('reset_password', student_id=student.id) }}" class="btn btn-warning">Reset Password to Default</button>
             <option value="Not Coming" {% if student.status=='Not Coming' %}selected{% endif %}>Sorry, I can't make it.
             </option>
             <option value="No Response" {% if student.status=='No Response' %}selected{% endif %}>I'm not sure yet.
@@ -55,8 +56,12 @@
             {% endfor %}
         </div>
         {% endif %}
+    <a href="{{ request.url_for('change_password_page') }}" class="btn btn-info">Change Password</a>
     </div>
 
+    {% if current_user.is_admin %}
+    <button type="submit" formaction="{{ request.url_for('reset_password', student_id=student.id) }}" class="btn btn-warning">Reset Password to Default</button>
+    {% endif %}
     <button type="submit" class="btn btn-primary">Save Changes</button>
     <a href="{{ request.url_for('students_page') }}" class="btn btn-secondary">Cancel</a>
 </form>

@@ -315,8 +315,8 @@ async def login_page(request: Request):
 async def handle_login(request: Request, full_name: str = Form(...), secret_fact: str = Form(...)):
     db = get_reunion_db()
     student = db.execute(
-        "SELECT * FROM students WHERE full_name = ? AND secret_fact = ?",
-        (full_name, secret_fact)
+        "SELECT * FROM students WHERE full_name = ? AND password = ?",
+        (full_name, secret_fact) #Still named 'secret_fact' in the form
     ).fetchone()
     db.close()
 
@@ -502,6 +502,97 @@ async def handle_edit_profile(
 
     return RedirectResponse(url=request.url_for('students_page'), status_code=status.HTTP_303_SEE_OTHER)
 
+
+@reunion_router.get("/password", response_class=HTMLResponse, name="change_password_page")
+async def change_password_page(request: Request, current_user: dict = Depends(require_login)):
+    return templates.TemplateResponse("change_password.html", {"request": request, "current_user": current_user})
+
+
+@reunion_router.post("/password", name="change_password")
+async def handle_change_password(
+    request: Request,
+    old_password: str = Form(...),
+    new_password: str = Form(...),
+    new_password_confirm: str = Form(...),
+    current_user: dict = Depends(require_login)
+):
+    if new_password != new_password_confirm:
+        return templates.TemplateResponse("change_password.html", {"request": request, "current_user": current_user, "error": "New passwords do not match."})
+
+    db = get_reunion_db()
+    student = db.execute(
+        "SELECT * FROM students WHERE id = ? AND password = ?",
+        (current_user["id"], old_password)
+    ).fetchone()
+
+    if not student:
+        return templates.TemplateResponse("change_password.html", {"request": request, "current_user": current_user, "error": "Incorrect old password."})
+
+    db.execute(
+        "UPDATE students SET password = ? WHERE id = ?",
+        (new_password, current_user["id"])
+    )
+    db.commit()
+    db.close()
+
+    return templates.TemplateResponse("change_password.html", {"request": request, "current_user": current_user, "message": "Password updated successfully."})
+
+@reunion_router.get("/password", response_class=HTMLResponse, name="change_password_page")
+async def change_password_page(request: Request, current_user: dict = Depends(require_login)):
+    return templates.TemplateResponse("change_password.html", {"request": request, "current_user": current_user})
+
+
+@reunion_router.post("/password", name="change_password")
+async def handle_change_password(
+    request: Request,
+    old_password: str = Form(...),
+    new_password: str = Form(...),
+    new_password_confirm: str = Form(...),
+    current_user: dict = Depends(require_login)
+):
+    if new_password != new_password_confirm:
+        return templates.TemplateResponse("change_password.html", {"request": request, "current_user": current_user, "error": "New passwords do not match."})
+
+    db = get_reunion_db()
+    student = db.execute(
+        "SELECT * FROM students WHERE id = ? AND password = ?",
+        (current_user["id"], old_password)
+    ).fetchone()
+
+    if not student:
+        return templates.TemplateResponse("change_password.html", {"request": request, "current_user": current_user, "error": "Incorrect old password."})
+
+    db.execute(
+        "UPDATE students SET password = ? WHERE id = ?",
+        (new_password, current_user["id"])
+    )
+    db.commit()
+    db.close()
+
+    return templates.TemplateResponse("change_password.html", {"request": request, "current_user": current_user, "message": "Password updated successfully."})
+
+
+@reunion_router.post("/reset_password/{student_id}", name="reset_password")
+async def reset_password(student_id: int, current_user: dict = Depends(require_login)):
+    if not current_user["is_admin"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only admins can reset passwords.")
+
+    db = get_reunion_db()
+    student = db.execute("SELECT full_name FROM students WHERE id = ?", (student_id,)).fetchone()
+
+    if not student:
+        db.close()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Student not found.")
+
+    default_password = student["full_name"].split(" ")[0].lower() # default password: first name lowercase
+    db.execute(
+        "UPDATE students SET password = ? WHERE id = ?",
+        (default_password, student_id)
+    )
+    db.commit()
+    db.close()
+
+    return {"message": f"Password for {student['full_name']} reset to default."}
 # Include the reunion router in the main FastAPI app
 app.include_router(reunion_router, prefix="/clhs1975", tags=["Reunion"])
 

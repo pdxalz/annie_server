@@ -28,6 +28,9 @@
                         <a class="nav-link" href="{{ request.url_for('students_page') }}">Student Directory</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ request.url_for('change_password_page') }}">Change Password</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ request.url_for('logout') }}">Logout ({{ current_user.full_name
                             }})</a>
                     </li>
