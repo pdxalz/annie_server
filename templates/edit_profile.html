@@ -4,6 +4,8 @@
 
 {% block content %}
 <h2>Edit Profile for {{ student.full_name }}</h2>
+<a href="{{ request.url_for('change_password_page') }}" class="btn btn-info">Change Password</a>
+
 
 <form method="post" enctype="multipart/form-data">
     <div class="mb-3">
@@ -56,7 +58,6 @@
             {% endfor %}
         </div>
         {% endif %}
-    <a href="{{ request.url_for('change_password_page') }}" class="btn btn-info">Change Password</a>
     </div>
 
     {% if current_user.is_admin %}

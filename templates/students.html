@@ -4,7 +4,10 @@
 
 {% block content %}
 <h2>CLHS '75 Student Directory</h2>
-<p>Here is the latest on our classmates. Please update your information.</p>
+<p>Here is a list of classmates who are coming to the reunion, those who can't make it,
+    and those who are no longer with us. Take a look at what your classmates have been up to for the past fifty years
+    and please add your own information.  Let us know if you will be bringing any guests, and if so, how many.
+    You can also upload up to five photos of yourself and your family. </p>
 
 <div class="list-group">
     {% set coming_students = [] %}
@@ -22,7 +25,7 @@
     {% endfor %}
 
     {% if coming_students %}
-    <h3>Coming</h3>
+    <h3>Classmates Coming to the Reunion</h3>
     {% for student in coming_students %}
         {% include 'student_card.html' %}
     {% endfor %}
