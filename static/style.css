@@ -3,6 +3,15 @@
     color: #c2f1f1; /* Light gray */
 }
 
+/* Style the top panel with a background image */
+.bg-light {
+    background-image: url('ConcordiaCampus.jpg'); /* Adjust path if needed */
+    background-size: cover; /* Cover the entire panel */
+    background-position: center; /* Center the image */
+    background-repeat: no-repeat; /* Prevent image from repeating */
+    color: white; /* Ensure text is readable on potentially dark image */
+}
+
 /* Make text on edit profile page lighter */
 body {
     background-color: rgb(32, 64, 158);
