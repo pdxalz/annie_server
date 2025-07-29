@@ -1,6 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Profile</title>
+    <!-- Add your CSS and other head elements here -->
+</head>
+<body>
+
 <div class="list-group-item list-group-item-action">
-    <div class="d-flex w-100 justify-content-between">
-        <h5 class="mb-1">{{ student.full_name }}</h5>
+    <div class="d-flex w-100 justify-content-between flex-wrap">
+        <h5 class="mb-1 text-wrap">{{ student.full_name }}</h5>
         <div>
             {% if student.status == 'Coming' %}
             <span class="badge bg-success">Coming (+{{ student.guests }} guests)</span>
@@ -13,17 +23,17 @@
             {% endif %}
         </div>
     </div>
-    <div class="mb-2 mt-2 biography-content">
+    <div class="mb-2 mt-2 biography-content text-wrap">
         {{ student.biography | safe or '<em>No biography provided.</em>' }}
     </div>
 
     {% if student.photos %}
     <div class="mt-2">
-        <div class="row g-2">
+        <div class="row g-2 gy-2">
             {% for photo in student.photos %}
             <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                 <a href="{{ request.url_for('uploads', path=photo.filename) }}" target="_blank" title="View full size">
-                    <img src="{{ request.url_for('uploads', path=photo.filename) }}" class="img-thumbnail"
+                    <img src="{{ request.url_for('uploads', path=photo.filename) }}" class="img-thumbnail img-fluid"
                         alt="Photo of {{ student.full_name }}">
                 </a>
             </div>
@@ -37,3 +47,7 @@
         class="btn btn-sm btn-outline-primary mt-3">Edit Profile</a>
     {% endif %}
 </div>
+
+<!-- Add your JavaScript and other body elements here -->
+</body>
+</html>

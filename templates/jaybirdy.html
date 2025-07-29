@@ -14,14 +14,16 @@
         }
 
         .container {
-            width: 90%;
-            margin: 30px auto;
+            width: 100%;
+            margin: 10px auto;
+            overflow-x: auto;
         }
 
         .jeopardy-board {
+            min-width: 700px;
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            grid-template-rows: 60px repeat(5, 150px);
+            grid-template-columns: repeat(6, minmax(100px, 1fr));
+            grid-template-rows: 60px repeat(5, 75px);
             gap: 8px;
             background: #0d133d;
             border-radius: 12px;
@@ -71,7 +73,7 @@
             border-radius: 12px;
             box-shadow: 0 0 30px #000a;
             z-index: 1000;
-            font-size: 6em;
+            font-size: 6vw;
             min-width: 300px;
             cursor: pointer;
             display: flex;
@@ -89,6 +91,13 @@
             bottom: 0;
             background: rgba(10, 20, 60, 0.7);
             z-index: 999;
+        }
+
+        /* Optional: Make grid even shorter on very small screens */
+        @media (max-width: 600px) and (orientation: landscape) {
+            .jeopardy-board {
+                grid-template-rows: 40px repeat(5, 50px);
+            }
         }
     </style>
 </head>
