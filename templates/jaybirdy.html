@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JayBirdy - CLHS '75 Reunion</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a237e;
+            color: #fff;
+            text-align: center;
+        }
+
+        .container {
+            width: 90%;
+            margin: 30px auto;
+        }
+
+        .jeopardy-board {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: 60px repeat(5, 150px);
+            gap: 8px;
+            background: #0d133d;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 0 20px #0006;
+        }
+
+        .category {
+            background: #283593;
+            color: #fff;
+            font-size: 1.2em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .cell {
+            background: #1565c0;
+            color: #fff;
+            font-size: 2em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 0 0 8px 8px;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .cell.used {
+            background: #3949ab;
+            color: #bdbdbd;
+            cursor: default;
+        }
+
+        .popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #283593;
+            color: #fff;
+            padding: 32px 24px;
+            border-radius: 12px;
+            box-shadow: 0 0 30px #000a;
+            z-index: 1000;
+            font-size: 6em;
+            min-width: 300px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 20, 60, 0.7);
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>JayBirdy! - CLHS '75 Reunion Jeopardy</h1>
+        <div class="jeopardy-board" id="board">
+            <!-- Categories -->
+            <div class="category">CLHS History</div>
+            <div class="category">Class of '75</div>
+            <div class="category">Pop Culture</div>
+            <div class="category">Teachers</div>
+            <div class="category">Where Are They Now?</div>
+            <div class="category">Wild Card</div>
+            <!-- Cells will be injected by JS -->
+        </div>
+    </div>
+
+    <script>
+        // Jeopardy data: [category][row]
+        const data = [
+            [
+                { value: 100, answer: "1953", question: "In what year was Concordia Lutheran High School established?" },
+                { value: 200, answer: "Downtown Houston", question: "Where was the original location of CLHS before moving to Tomball?" },
+                { value: 300, answer: "Lutheran Church–Missouri Synod", question: "Which church body founded CLHS?" },
+                { value: 400, answer: "Blue and Gold", question: "What are the school colors of CLHS?" },
+                { value: 500, answer: "Eagles", question: "What is the mascot of CLHS?" }
+            ],
+            [
+                { value: 100, answer: "It depends.", question: "Who was the senior class president in 1975?" },
+                { value: 200, answer: "It depends.", question: "Who was voted 'Most Likely to Succeed' in the class of '75?" },
+                { value: 300, answer: "It depends.", question: "Who gave the valedictorian speech for the class of '75?" },
+                { value: 400, answer: "It depends.", question: "Who was the class clown in '75?" },
+                { value: 500, answer: "It depends.", question: "Who was the prom king or queen in 1975?" }
+            ],
+            [
+                { value: 100, answer: "Captain Fantastic and the Brown Dirt Cowboy", question: "What was the best selling album of 1975?" },
+                { value: 200, answer: "Jaws", question: "What was the highest grossing film of 1975?" },
+                { value: 300, answer: "Pet Rock", question: "What fad toy was popular in 1975?" },
+                { value: 400, answer: "Saturday Night Live", question: "Which iconic TV show debuted in 1975?" },
+                { value: 500, answer: "Microsoft", question: "Which tech company was founded in 1975?" }
+            ],
+            [
+                { value: 100, answer: "It depends.", question: "Which teacher was famous for exploding chemistry demos?" },
+                { value: 200, answer: "It depends.", question: "Who taught senior English in 1975?" },
+                { value: 300, answer: "It depends.", question: "Which teacher coached the basketball team in '75?" },
+                { value: 400, answer: "It depends.", question: "Who was the principal in 1975?" },
+                { value: 500, answer: "It depends.", question: "Which teacher played guitar at chapel?" }
+            ],
+            [
+                { value: 100, answer: "Fill me in!", question: "What is ____ doing these days?" },
+                { value: 200, answer: "I have no clue.", question: "Where does ___ live now?" },
+                { value: 300, answer: "It depends.", question: "Who moved out of state after graduation?" },
+                { value: 400, answer: "It depends.", question: "Who became a doctor from the class of '75?" },
+                { value: 500, answer: "It depends.", question: "Who is still in Houston from the class of '75?" }
+            ],
+            [
+                { value: 100, answer: "It depends.", question: "Who drove the coolest car in '75?" },
+                { value: 200, answer: "It depends.", question: "Who had the longest hair in the class?" },
+                { value: 300, answer: "It depends.", question: "Who was the best athlete in '75?" },
+                { value: 400, answer: "It depends.", question: "Who was the best dancer at prom?" },
+                { value: 500, answer: "It depends.", question: "Who was voted 'Most Artistic'?" }
+            ]
+        ];
+
+        // Render grid cells
+        const board = document.getElementById('board');
+        for (let row = 0; row < 5; row++) {
+            for (let col = 0; col < 6; col++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.textContent = data[col][row].value;
+                cell.dataset.col = col;
+                cell.dataset.row = row;
+                cell.onclick = function () { showAnswer(col, row, cell); };
+                board.appendChild(cell);
+            }
+        }
+
+        // Popup logic
+        let overlay, popup;
+        function showAnswer(col, row, cell) {
+            if (cell.classList.contains('used')) return;
+            overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            document.body.appendChild(overlay);
+
+            popup = document.createElement('div');
+            popup.className = 'popup';
+            popup.textContent = data[col][row].answer;
+            popup.onclick = function () { showQuestion(col, row, cell); };
+            document.body.appendChild(popup);
+        }
+        function showQuestion(col, row, cell) {
+            popup.textContent = data[col][row].question;
+            popup.onclick = function () { closePopup(cell); };
+        }
+        function closePopup(cell) {
+            document.body.removeChild(popup);
+            document.body.removeChild(overlay);
+            cell.classList.add('used');
+            cell.textContent = '';
+        }
+    </script>
+</body>
+
+</html>

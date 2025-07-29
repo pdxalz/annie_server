@@ -273,6 +273,10 @@ async def get_image_date():
 async def read_index():
     return FileResponse(INDEX_HTML_PATH)
 
+@app.get("/jaybirdy", response_class=HTMLResponse)
+async def read_jaybirdy():
+    return FileResponse(APP_ROOT / "templates/jaybirdy.html")
+
 # ==============================================================================
 # == REUNION WEBSITE API                                                      ==
 # ==============================================================================
@@ -594,7 +598,7 @@ async def reset_password(student_id: int, current_user: dict = Depends(require_l
 
     return {"message": f"Password for {student['full_name']} reset to default."}
 # Include the reunion router in the main FastAPI app
-app.include_router(reunion_router, prefix="/clhs1975", tags=["Reunion"])
+app.include_router(reunion_router, prefix="/clhs1975oops", tags=["Reunion"])
 
 
 def hours_minutes(time_str):

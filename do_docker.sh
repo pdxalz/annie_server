@@ -1,2 +1,2 @@
 #!/bin/bash
-docker run --rm --name anniedock -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.112 -v roosterpict:/rooster -e MQTT_HOST=107.174.172.150 -e MQTT_PORT=1883 -e MQTT_USRNM=web_api -e MQTT_PSWD=SauvieKite9M   annie_img
+docker run --rm --name anniedock -v $PWD/winddata:/winddata -p 80:8000/tcp -e SERVER_URL=http://192.168.68.110 -v roosterpict:/rooster -e MQTT_HOST=107.174.172.150 -e MQTT_PORT=1883 -e MQTT_USRNM=web_api -e MQTT_PSWD=SauvieKite9M   annie_img
