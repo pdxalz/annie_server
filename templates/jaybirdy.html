@@ -73,7 +73,7 @@
             border-radius: 12px;
             box-shadow: 0 0 30px #000a;
             z-index: 1000;
-            font-size: 6vw;
+            font-size: 4.2vw;
             min-width: 300px;
             cursor: pointer;
             display: flex;
@@ -106,61 +106,65 @@
     <div class="container">
         <h1>JayBirdy! - CLHS '75 Reunion Jeopardy</h1>
         <div class="jeopardy-board" id="board">
-            <!-- Categories -->
-            <div class="category">CLHS History</div>
-            <div class="category">Class of '75</div>
-            <div class="category">Pop Culture</div>
+            <div class="category">Homecoming</div>
             <div class="category">Teachers</div>
-            <div class="category">Where Are They Now?</div>
-            <div class="category">Wild Card</div>
-            <!-- Cells will be injected by JS -->
+            <div class="category">Student Body</div>
+            <div class="category">Potpourri</div>
+            <div class="category">Sports</div>
+            <div class="category">Senior Quotes</div>
         </div>
     </div>
 
     <script>
         // Jeopardy data: [category][row]
         const data = [
+            // Homecoming
             [
-                { value: 100, answer: "1953", question: "In what year was Concordia Lutheran High School established?" },
-                { value: 200, answer: "Downtown Houston", question: "Where was the original location of CLHS before moving to Tomball?" },
-                { value: 300, answer: "Lutheran Church–Missouri Synod", question: "Which church body founded CLHS?" },
-                { value: 400, answer: "Blue and Gold", question: "What are the school colors of CLHS?" },
-                { value: 500, answer: "Eagles", question: "What is the mascot of CLHS?" }
+                { value: 100, question: "Elaine Grothe<br> (Rick Eike)", answer: "She was the 74-75 Homecoming Queen" },
+                { value: 200, question: "Eileen Anderson<br> (Art Harrison)<br>Amy Braunshweiger<br> (Jim Zagel)<br>Leslie McKichan<br> (Randy Wolvert)<br>Donna Schultz<br> (Kent Einsphar)", answer: "They were the Homecoming Court" },
+                { value: 300, question: "Debbie Kramer<br> (the 73-74 Homecoming Queen)", answer: "She opened the envelope to announce the Homecoming Queen" },
+                { value: 400, question: "Corbett", answer: "The volleyball team wrapped up their season by defeating this arch-enemy" },
+                { value: 500, question: "Warrenton<br>12-7", answer: "In the homecoming football game, the Jays were victorious over this team." }
             ],
+            // Teachers
             [
-                { value: 100, answer: "It depends.", question: "Who was the senior class president in 1975?" },
-                { value: 200, answer: "It depends.", question: "Who was voted 'Most Likely to Succeed' in the class of '75?" },
-                { value: 300, answer: "It depends.", question: "Who gave the valedictorian speech for the class of '75?" },
-                { value: 400, answer: "It depends.", question: "Who was the class clown in '75?" },
-                { value: 500, answer: "It depends.", question: "Who was the prom king or queen in 1975?" }
+                { value: 100, question: "Glenn Baumann", answer: 'This teacher was quoted as saying:<br> "I hate losing, losing makes me nasty"' },
+                { value: 200, question: "Froggy", answer: "The final word of the valentine:<br> Roses are buggy,<br> Bio is ugly,<br> Mr K. looks like<br> a dissected ______" },
+                { value: 300, question: "Ruhnkey.", answer: "The name ending the valentine:<br> Roses are red,<br> Violets are funky,<br> Somethings are weird,<br> and so is _______" },
+                { value: 400, question: "Sharon Anderson", answer: "She was Concordia High's first business education teacher" },
+                { value: 500, question: "Faculty - 27  Seniors - 39", answer: "Final score of the<br> faculty<br>vs.<br> seniors<br> basketball game" }
             ],
+            // Student Body
             [
-                { value: 100, answer: "Captain Fantastic and the Brown Dirt Cowboy", question: "What was the best selling album of 1975?" },
-                { value: 200, answer: "Jaws", question: "What was the highest grossing film of 1975?" },
-                { value: 300, answer: "Pet Rock", question: "What fad toy was popular in 1975?" },
-                { value: 400, answer: "Saturday Night Live", question: "Which iconic TV show debuted in 1975?" },
-                { value: 500, answer: "Microsoft", question: "Which tech company was founded in 1975?" }
+                { value: 100, question: "Thom Watson<br> (student body president)", answer: 'He was quoted as saying:<br> "It takes a big man to do a big job. That\'s why I\'m having so much trouble."' },
+                { value: 200, question: "196 total students,<br> 104 girls, 92 boys.", answer: "It was Concordia's total enrollment for the 74 - 75 school year" },
+                { value: 300, question: "44 seniors,<br> 23 girls, 21 boys", answer: "It was Concordia's senior class enrolment for the 74 - 75 school year" },
+                { value: 400, question: "Sandy Chatterton<br>Allison DeWitz<br>Debbie Gaylord<br>Julie Hahn<br>Joe Ellen Schmutzer<br>Margo Stark", answer: "They were the senior members of the 1974 Concordia Dance Drill Team(6)" },
+                { value: 500, question: "Allowing the wearing of jeans during school", answer: "The student council on Dec. 3rd, proposed a three week trial of this radical idea." }
             ],
+            // Potpourri
             [
-                { value: 100, answer: "It depends.", question: "Which teacher was famous for exploding chemistry demos?" },
-                { value: 200, answer: "It depends.", question: "Who taught senior English in 1975?" },
-                { value: 300, answer: "It depends.", question: "Which teacher coached the basketball team in '75?" },
-                { value: 400, answer: "It depends.", question: "Who was the principal in 1975?" },
-                { value: 500, answer: "It depends.", question: "Which teacher played guitar at chapel?" }
+                { value: 100, question: "Cross Country 1974<br> the only way to go!", answer: "It was the theme for the 1974 cross country season" },
+                { value: 200, question: "Jeans,<br>50 pairs of earrings<br>50 dispensers of mouthspray<br>a typewriter", answer: "They were the items stolen during the Wear Haus break-in" },
+                { value: 300, question: "Donnata Schultz", answer: "Winner of the Oregon German contest, this student spent four weeks in the historic Bavarian city of Nuremberg" },
+                { value: 400, question: "Cynthia Kranich and Karen Nygaard", answer: "Two Seniors named by the National Merit Scholarship Corp." },
+                { value: 500, question: "Linda Hall", answer: "This senior went around writing<br> B E A T L E S<br> on all the freshman foreheads." }
             ],
+            // Sports
             [
-                { value: 100, answer: "Fill me in!", question: "What is ____ doing these days?" },
-                { value: 200, answer: "I have no clue.", question: "Where does ___ live now?" },
-                { value: 300, answer: "It depends.", question: "Who moved out of state after graduation?" },
-                { value: 400, answer: "It depends.", question: "Who became a doctor from the class of '75?" },
-                { value: 500, answer: "It depends.", question: "Who is still in Houston from the class of '75?" }
+                { value: 100, question: "Kit Sundling", answer: "This runner represented Concordia at the State Cross Country meet at Lane Community College." },
+                { value: 200, question: "Rick Johnson<br>Rick Suffield<br>Michael Hanson", answer: "Seniors on the Men's Cross Country team (3)" },
+                { value: 300, question: "Art Harrison<br>Kent Einspahr<br>Rick Eike<br>Greg Dittmer<br>Ray Herman<br>Jim Zagel<br>Randy Wolvert<br>Jay Krall<br>Gene Schaefer<br>Marty Tyler<br>Thom Watson", answer: "Football Seniors (11)" },
+                { value: 400, question: "Leslie McKichan<br>Elaine Grothe<br>Donna Schultz", answer: "Senior Cheerleaders (3)" },
+                { value: 500, question: "Kent Einsphar<br>Randy Wolvert<br>Art Harrison<br>John Pemberton<br>Gene Schaeffer<br>Steve Scheffel<br>Thom Watson<br>Jim Zagel", answer: "Basketball Seniors (8)" }
             ],
+            // Senior Quotes
             [
-                { value: 100, answer: "It depends.", question: "Who drove the coolest car in '75?" },
-                { value: 200, answer: "It depends.", question: "Who had the longest hair in the class?" },
-                { value: 300, answer: "It depends.", question: "Who was the best athlete in '75?" },
-                { value: 400, answer: "It depends.", question: "Who was the best dancer at prom?" },
-                { value: 500, answer: "It depends.", question: "Who was voted 'Most Artistic'?" }
+                { value: 100, question: "Marsha Patrick", answer: '"Prayer should be our first resource, rather than our last resort."' },
+                { value: 200, question: "Amy Braunschweiger", answer: '"Honey, I\'ve gotta get out of here."' },
+                { value: 300, question: "Theresa Harth", answer: '"When will I see you again...."' },
+                { value: 400, question: "Karen Nygaard", answer: '"Yes, Mr. Krueger, it\'s really me!"' },
+                { value: 500, question: "John Pemberton", answer: '"It\'s great to be important,<br> but it\'s more important to be great."' }
             ]
         ];
 
@@ -188,12 +192,12 @@
 
             popup = document.createElement('div');
             popup.className = 'popup';
-            popup.textContent = data[col][row].answer;
+            popup.innerHTML = data[col][row].answer; // <-- use innerHTML
             popup.onclick = function () { showQuestion(col, row, cell); };
             document.body.appendChild(popup);
         }
         function showQuestion(col, row, cell) {
-            popup.textContent = data[col][row].question;
+            popup.innerHTML = data[col][row].question; // <-- use innerHTML
             popup.onclick = function () { closePopup(cell); };
         }
         function closePopup(cell) {
