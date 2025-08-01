@@ -22,7 +22,7 @@
         .jeopardy-board {
             min-width: 700px;
             display: grid;
-            grid-template-columns: repeat(6, minmax(100px, 1fr));
+            grid-template-columns: repeat(7, minmax(100px, 1fr));
             grid-template-rows: 60px repeat(5, 75px);
             gap: 8px;
             background: #0d133d;
@@ -106,12 +106,13 @@
     <div class="container">
         <h1>JayBirdy! - CLHS '75 Reunion Jeopardy</h1>
         <div class="jeopardy-board" id="board">
-            <div class="category">Homecoming</div>
+            <div class="category">Home coming</div>
             <div class="category">Teachers</div>
             <div class="category">Student Body</div>
             <div class="category">Potpourri</div>
             <div class="category">Sports</div>
-            <div class="category">Senior Quotes</div>
+            <div class="category">Senior<br>Quotes</div>
+            <div class="category">You Did What?</div>
         </div>
     </div>
 
@@ -120,8 +121,8 @@
         const data = [
             // Homecoming
             [
-                { value: 100, question: "Elaine Grothe<br> (Rick Eike)", answer: "Although she didn't join our class until junior year, her bubbly, kind, personality quickly made her a standout in our class.  Her Homecoming escort's friendly, laid back demeanor also made him a friend of all." },
-                { value: 200, question: "Eileen Anderson<br> (Art Harrison)<br>Amy Braunshweiger<br> (Jim Zagel)<br>Leslie McKichan<br> (Randy Wolvert)<br>Donna Schultz<br> (Kent Einsphar)", answer: "They were the Homecoming Court" },
+                { value: 100, question: "Elaine Grothe<br>Rick Eike", answer: "She was the homecoming queen and he was her escort." },
+                { value: 200, question: "Eileen Anderson<br> (Art Harrison)<br>Amy Braunchweiger<br> (Jim Zagel)<br>Leslie McKichan<br> (Randy Wolvert)<br>Donna Schultz<br> (Kent Einspahr)", answer: "They were the Homecoming Court" },
                 { value: 300, question: "We've Only Just Begun, by The Carpenters", answer: "It was the Homecoming theme song by this popular brother-sister duo." },
                 { value: 400, question: "Corbett", answer: "The volleyball team wrapped up their season by defeating this arch-enemy" },
                 { value: 500, question: "Warrenton<br>12-7", answer: "In the homecoming football game, the Jays were victorious over this team." }
@@ -130,15 +131,15 @@
             [
                 { value: 100, question: "Mr. Dave Berger", answer: "When he wasn't teaching English, his rich bass voice could be heard in the music building as he practiced scales." },
                 { value: 200, question: "Froggy", answer: "The final word of the valentine:<br> Roses are buggy,<br> Bio is ugly,<br> Mr K. looks like<br> a dissected ______" },
-                { value: 300, question: "Ruhnkey.", answer: "The name ending the valentine:<br> Roses are red,<br> Violets are funky,<br> Somethings are weird,<br> and so is _______" },
-                { value: 400, question: "Mr. Norm Brauer<br>JoEllen was the current events whiz", answer: "Teacher whose history class included a weekly current events game and classmate who knew all the answers." },
+                { value: 300, question: "Ruhnke.", answer: "The name ending the valentine:<br> Roses are red,<br> Violets are funky,<br> Some things are weird,<br> and so is _______" },
+                { value: 400, question: "Mr. Norm Brauer<br>JoEllen Schmutzer was the current events whiz", answer: "Teacher whose history class included a weekly current events game and the classmate who knew all the answers." },
                 { value: 500, question: "Faculty - 27  Seniors - 39", answer: "Final score of the<br> faculty<br>vs.<br> seniors<br> basketball game" }
             ],
             // Student Body
             [
-                { value: 100, question: "Thom Watson<br> (student body president)", answer: 'He was quoted as saying:<br> "It takes a big man to do a big job. That\'s why I\'m having so much trouble."' },
+                { value: 100, question: "Tom Watson<br> (student body president)", answer: 'He was quoted as saying:<br> "It takes a big man to do a big job. That\'s why I\'m having so much trouble."' },
                 { value: 200, question: "196 total students,<br> 104 girls, 92 boys.", answer: "It was Concordia's total enrollment for the 74 - 75 school year" },
-                { value: 300, question: "44 seniors,<br> 23 girls, 21 boys", answer: "It was Concordia's senior class enrolment for the 74 - 75 school year" },
+                { value: 300, question: "44 seniors,<br> 23 girls, 21 boys", answer: "It was Concordia's senior class enrollment for the 74 - 75 school year" },
                 { value: 400, question: "Sandy Chatterton<br>Allison DeWitz<br>Debbie Gaylord<br>Julie Hahn<br>Joe Ellen Schmutzer<br>Margo Stark", answer: "They were the senior members of the 1974 Concordia Dance Drill Team(6)" },
                 { value: 500, question: "Allowing the wearing of jeans during school", answer: "The student council on Dec. 3rd, proposed a three week trial of this radical idea." }
             ],
@@ -146,17 +147,17 @@
             [
                 { value: 100, question: "Cross Country 1974<br> the only way to go!", answer: "It was the theme for the 1974 cross country season" },
                 { value: 200, question: "Linda Hall<br>Marty Tyler<br>Fred Teifel<br>Tom Pender", answer: "In the spring musical \"You're a Good Man, Charlie Brown,\"<br>  these seniors played Lucy, Linus, Schroeder, and Snoopy." },
-                { value: 300, question: "Donnata Schultz", answer: "Winner of the Oregon German contest, this student spent four weeks in the historic Bavarian city of Nuremberg" },
-                { value: 400, question: "Cynthia Kranich and Karen Nygaard", answer: "Two Seniors named by the National Merit Scholarship Corp." },
+                { value: 300, question: "Donna Schultz<br> (Cindy got a dictionary for second place)", answer: "Winner of the Oregon German contest, this student spent four weeks in the historic Bavarian city of Nuremberg" },
+                { value: 400, question: "Cindy Kranich and Karen Nygaard", answer: "Two seniors named National Merit Scholars." },
                 { value: 500, question: "Linda Hall", answer: "This senior went around writing<br> B E A T L E S<br> on all the freshman foreheads." }
             ],
             // Sports
             [
                 { value: 100, question: "Kit Sundling", answer: "This runner represented Concordia at the State Cross Country meet at Lane Community College." },
                 { value: 200, question: "Rick Johnson<br>Rick Suffield<br>Michael Hanson", answer: "Seniors on the Men's Cross Country team (3)" },
-                { value: 300, question: "Art Harrison<br>Kent Einspahr<br>Rick Eike<br>Greg Dittmer<br>Ray Herman<br>Jim Zagel<br>Randy Wolvert<br>Jay Krall<br>Gene Schaefer<br>Marty Tyler<br>Thom Watson", answer: "Football Seniors (11)" },
+                { value: 300, question: "Art Harrison<br>Kent Einspahr<br>Rick Eike<br>Greg Dittmer<br>Ray Hermann<br>Jim Zagel<br>Randy Wolvert<br>Jay Krall<br>Gene Schaefer<br>Marty Tyler<br>Tom Watson", answer: "Football Seniors (11)" },
                 { value: 400, question: "Leslie McKichan<br>Elaine Grothe<br>Donna Schultz", answer: "Senior Cheerleaders (3)" },
-                { value: 500, question: "Kent Einsphar<br>Randy Wolvert<br>Art Harrison<br>John Pemberton<br>Gene Schaeffer<br>Steve Scheffel<br>Thom Watson<br>Jim Zagel", answer: "Basketball Seniors (8)" }
+                { value: 500, question: "Kent Einspahr<br>Randy Wolvert<br>Art Harrison<br>John Pemberton<br>Gene Schaefer<br>Steve Scheffel<br>Tom Watson<br>Jim Zagel", answer: "Basketball Seniors (8)" }
             ],
             // Senior Quotes
             [
@@ -165,13 +166,21 @@
                 { value: 300, question: "Theresa Harth", answer: '"When will I see you again...."' },
                 { value: 400, question: "Karen Nygaard", answer: '"Yes, Mr. Krueger, it\'s really me!"' },
                 { value: 500, question: "John Pemberton", answer: '"It\'s great to be important,<br> but it\'s more important to be great."' }
+            ],
+            // You Did What?
+            [
+                { value: 100, question: "Allison DeWitz", answer: "I rode the World Naked bike ride to celebrate my 60th birthday."},
+                { value: 200, question: "Cindy Kranich", answer: "I worked as a National Marine Fisheries observer sampling the catch aboard a Soviet processing ship on the Bering Sea" },
+                { value: 300, question: "Alan Zimmerman", answer: "I learned to play the banjo after hearing Steve Martin say \"It's hard to be sad when you're playing the banjo.\"" },
+                { value: 400, question: "Kent Einspahr", answer: "I was the youngest head basketball coach in the NAIA at age 25." },
+                { value: 500, question: "Allison, Alan, and ChatGPT", answer: "We created this website." }
             ]
         ];
 
         // Render grid cells
         const board = document.getElementById('board');
         for (let row = 0; row < 5; row++) {
-            for (let col = 0; col < 6; col++) {
+            for (let col = 0; col < 7; col++) {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 cell.textContent = data[col][row].value;
