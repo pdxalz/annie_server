@@ -1,136 +1,159 @@
+********   Homecoming
+100,     She was the homecoming queen and he was her escort.
+				Elaine Grothe
+				Rick Eike 
 
-* HOMECOMING
+200,     They were the Homecoming Court
+				Eileen Anderson    (Art Harrison)
+				Amy Braunchweiger  (Jim Zagel)
+				Leslie McKichan    (Randy Wolvert)
+				Donna Schultz      (Kent Einspahr) 
 
-She was the 74-75 Homecoming Queen
-	Elaine Grothe, escort Rick Eike
-	
-They were the Homecoming Court
-	Eileen Anderson, Art Harrison
-	Amy Braunshweiger, Jim Zagel
-	Leslie McKichan, Randy Wolvert
-	Donna Schultz, Kent Einsphar
-	
-She opened the envelope to announce the Homecoming Queen 
-	Debbie Kramer, the 73-74 Homecoming Queen
+300,     It was the Homecoming theme song by this popular brother-sister duo.
+      			We've Only Just Begun, by The Carpenters 
 
-The volleyball team wrapped up their season by defeating this arch-enemy
-	Corbett
-	
-In the homecoming football game, the Jays were victorious over this team.
-	Warrenton  12-7
-	
+400,     The volleyball team wrapped up their season by defeating this arch-enemy
+      			Corbett 
 
-* TEACHERS
+500,     In the homecoming football game, the Jays were victorious over this team.
+     			Warrenton   12-7 
 
-This teacher was quoted as saying "I hate losing, losing makes me nasty" 
-	Glenn Baumann
-	
-The final word of the valentine: Roses are buggy, Bio is ugly, Mr K. looks like a dissected ______
-	Froggy
-	
-The name ending the valentine: Roses are red, Violets are funky, Somethings are weird, and so is _______
-	Ruhnkey.
+********   Teachers
+100,     When he wasn't teaching English, his rich bass voice could be heard in the music building as he practiced scales.
+      			Mr. Dave Berger 
 
-She was Concordia High's first business education teacher 
-	Sharon Anderson
-	
-Final score of the faculty - senior basketball game
-	gaculty - 27  seniors - 39
+200,     The final word of the valentine:
+			Roses are buggy,
+      		Bio is ugly,
+      		Mr K. looks like
+      		a dissected ______
+      			Froggy 
 
-* STUDENT BODY
+300,     The name ending the valentine:
+      		Roses are red,
+      		Violets are funky,
+      		Some things are weird,
+      		and so is _______
+      			Ruhnke. 
 
-Regarding the student body president, he was quoted as saying "It takes a big man to do a big job. That's why I'm having so much trouble.
-	Thom Watson
+400,     Teacher whose history class included a weekly current events game and the classmate who knew all the answers.
+      			Mr. Norm Brauer
+      			JoEllen Schmutzer was the current events whiz 
 
-It was Concordia's total enrollment for the 74 - 75 school year 
-	196, 104 girls, 92 boys.
-	
-It was Concordia's senior class enrolment for the 74 - 75 school year 
-	44, 23 girls, 21 boys
-	
-They were the senior members of the 74 Concordia Dance Drill Team(6)
-	Sandy Chatterton
-	Allison DeWitz
-	Debbie Gaylord
-	Julie Hahn
-	Joe Ellen Schmutzer
-	Margo Stark
-	
-The student council on Dec. 3rd, proposed a three week trial of this radical idea.
-	Allowing the wearing of jeans during school
+500,     Final score of the faculty vs. seniors basketball game
+      			Faculty - 27  Seniors - 39 
 
-* POTPOURRI	
 
-It was the theme for the 1974 cross country season 
-	Cross Country 1974 the only way to go!
-	
-They were the items stolen during the Wear Haus break-in
-	Jeans,
-	50 pairs of earrings
-	50 dispensers of mouthspray
-	a typewriter
-	
-Winner of the Oregon German contest, this student spent four weeks in the historic Bavarian city of Nuremberg 
-	Donnata Schultz
-	
-Two Seniors named by the National Merit Scholarship Corp.
-	Cynthia Kranich and Karen Nygaard
 
-This senior went around writing B E A T L E S on all the freshman foreheads.
-	Linda Hall
-	
-* SPORTS
+********   Student Body
+100,     'He was quoted as saying: It takes a big man to do a big job. That\'s why I\'m having so much trouble.'
+      			Tom Watson (student body president) 
 
-This runner represented Concordia at the State Cross Country meet at Lane Community College.
-	Kit Sundling
-	
-Seniors on the Men's Cross Country team (3)
-	Rick Johnson
-	Rick Suffield
-	Michael Hanson
-	
-Football Seniors (11)
-	Art Harrison
-	Kent Einspahr
-	Rick Eike
-	Greg Dittmer
-	Ray Herman
-	Jim Zagel
-	Randy Wolvert
-	Jay Krall
-	Gene Schaefer
-	Marty Tyler
-	Thom Watson
+200,     It was Concordia's total enrollment for the 74 - 75 school year
+      			196 total students, 104 girls, 92 boys. 
 
-Senior Cheerleaders (3)
-	Leslie McKichan
-	Elaine Grothe
-	Donna Schultz
-	
-Basketball Seniors (8)
-	Kent Einsphar
-	Randy Wolvert
-	Art Harrison
-	John Pemberton
-	Gene Schaeffer
-	Steve Scheffel
-	Thom Watson
-	Jim Zagel
-	
-* SENIOR QUOTES
+300,     It was Concordia's senior class enrollment for the 74 - 75 school year
+      			44 seniors, 23 girls, 21 boys 
 
-"Prayer should be our first resource, rather than our last resort."
-	Marsha Patrick
+400,     They were the senior members of the 1974 Concordia Dance Drill Team(6)
+      			Sandy Chatterton
+				Allison DeWitz
+				Debbie Gaylord
+				Julie Hahn
+				Joe Ellen Schmutzer
+				Margo Stark 
 
-"Honey, I've gotta get out of here."
-	Amy Braunschweiger
-	
-"When will I see you again...."
-	Theresa Harth
-	
-"Yes, Mr. Krueger, it's really me!"
-	Karen Nygaard
-	
-"It's great to be important, but it's more important to be great."
-	John Pemberton
-	
+500,     The student council on Dec. 3rd, proposed a three week trial of this radical idea. }
+      			Allowing the wearing of jeans during school 
+
+
+********   Potpourri
+100,     It was the theme for the 1974 cross country season
+      			Cross Country 1974 the only way to go! 
+
+200,     In the spring musical \You're a Good Man, Charlie Brown,\  these seniors played Lucy, Linus, Schroeder, and Snoopy.
+      			Linda Hall
+      			Marty Tyler
+      			Fred Teifel
+      			Tom Pender 
+
+300,     Winner of the Oregon German contest, this student spent four weeks in the historic Bavarian city of Nuremberg
+      			Donna Schultz (Cindy got a dictionary for second place) 
+
+400,     Two seniors named National Merit Scholars.
+      			Cindy Kranich and Karen Nygaard 
+
+500,     This senior went around writing B E A T L E S on all the freshman foreheads. }
+      			Linda Hall 
+
+
+********   Sports
+100,     This runner represented Concordia at the State Cross Country meet at Lane Community College.
+      			Kit Sundling 
+
+200,     Seniors on the Men's Cross Country team (3)
+      			Rick Johnson
+      			Rick Suffield
+      			Michael Hanson 
+
+300,     Football Seniors (11)
+      			Art Harrison
+      			Kent Einspahr
+      			Rick Eike
+      			Greg Dittmer
+      			Ray Hermann
+      			Jim Zagel
+      			Randy Wolvert
+      			Jay Krall
+      			Gene Schaefer
+      			Marty Tyler
+      			Tom Watson 
+
+400,     Senior Cheerleaders (3)
+      			Leslie McKichan
+      			Elaine Grothe
+      			Donna Schultz 
+
+500,     Basketball Seniors (8)
+      			Kent Einspahr
+      			Randy Wolvert
+      			Art Harrison
+      			John Pemberton
+      			Gene Schaefer
+      			Steve Scheffel
+      			Tom Watson
+      			Jim Zagel 
+
+
+********   Senior Quotes
+100,     'Prayer should be our first resource, rather than our last resort.'
+      			Marsha Patrick 
+
+200,     'Honey, I\'ve gotta get out of here.'
+      			Amy Braunschweiger 
+
+300,     'When will I see you again....'
+      			Theresa Harth 
+
+400,     'Yes, Mr. Krueger, it\'s really me!'
+      			Karen Nygaard 
+
+500,     'It\'s great to be important, but it\'s more important to be great.'
+      			John Pemberton 
+
+
+********   You Did What?
+100,     I rode the World Naked bike ride to celebrate my 60th birthday.
+      			Allison DeWitz 
+
+200,     I worked as a National Marine Fisheries observer sampling the catch aboard a Soviet processing ship on the Bering Sea
+      			Cindy Kranich 
+
+300,     I learned to play the banjo after hearing Steve Martin say \It's hard to be sad when you're playing the banjo.\
+      			Alan Zimmerman 
+
+400,     I was the youngest head basketball coach in the NAIA at age 25.
+      			Kent Einspahr 
+				
+500,     We created this website. 
+     			Allison, Alan, and ChatGPT 
