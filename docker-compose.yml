@@ -1,12 +1,23 @@
-version: '3.4'
-
+# Local development stack: the app plus a throwaway MQTT broker (no passwords).
+#   docker compose up --build
+#   python scripts/mock_annie.py     # pretend to be Annie
+# Open http://localhost:8000
 services:
-  annieapi:
-    image: annieapi
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+  mosquitto:
+    image: eclipse-mosquitto:2.0
     volumes:
-      - ./src:/dbase
+      - ./dev/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
     ports:
-      - 8000:8000
+      - "1883:1883"
+
+  app:
+    build: .
+    environment:
+      MQTT_HOST: mosquitto
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./winddata:/winddata
+      - ./dev/rooster:/rooster
+    depends_on:
+      - mosquitto

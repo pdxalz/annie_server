@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sauvie Island Wind | Live Wind for Wing Foil &amp; Kiteboarding</title>
+  <meta name="description" content="Live wind speed, gusts and direction at Sauvie Island on the Columbia River, with St. Helens and Longview upriver readings, tides and short-term forecast.">
+  <script>
+    // Apply the saved theme before first paint so there is no flash.
+    (function () {
+      var t = localStorage.getItem("theme");
+      if (!t) t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.dataset.theme = t;
+    })();
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231f3a93'/%3E%3Cpath d='M12 24h30a6 6 0 1 0-6-6M12 36h38a6 6 0 1 1-6 6M12 48h20' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Sauvie Island Wind</h1>
+    <button id="theme-toggle" class="icon-btn" type="button" aria-label="Switch light/dark theme" title="Switch light/dark theme">
+      <span class="theme-icon" aria-hidden="true"></span>
+    </button>
+  </header>
+
+  <div id="banner" class="banner" role="status" hidden></div>
+  <div id="offline" class="banner banner-warning" role="status" hidden></div>
+
+  <main>
+    <section id="hero" class="card hero" aria-live="polite">
+      <p class="muted">Loading wind...</p>
+    </section>
+
+    <section class="card">
+      <h2>Upriver readings</h2>
+      <p class="muted small">Wind often reaches Sauvie after showing up downriver. Longview and St. Helens are airport sensors (updated about hourly).</p>
+      <div id="river" class="river"></div>
+    </section>
+
+    <section class="card">
+      <div class="toolbar">
+        <div class="seg" id="hours-buttons" role="group" aria-label="Time range">
+          <button type="button" data-hours="3">3h</button>
+          <button type="button" data-hours="6">6h</button>
+          <button type="button" data-hours="12">12h</button>
+          <button type="button" data-hours="24">24h</button>
+        </div>
+        <div class="datepick" role="group" aria-label="Pick a day">
+          <button type="button" id="prev-day" class="icon-btn" aria-label="Previous day">&#9664;</button>
+          <input type="date" id="day" aria-label="Date">
+          <button type="button" id="next-day" class="icon-btn" aria-label="Next day">&#9654;</button>
+          <button type="button" id="live-btn" class="link-btn" hidden>Back to live</button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="wind-chart" aria-label="Wind speed chart" role="img"></canvas></div>
+      <div class="chart-legend small">
+        <label><input type="checkbox" id="ov-kspb"> St. Helens</label>
+        <label><input type="checkbox" id="ov-kkls"> Longview</label>
+        <span class="chip flood">Flood tide</span>
+        <span class="chip ebb">Ebb tide</span>
+        <span class="muted">Arrows show where the wind is blowing toward</span>
+      </div>
+      <p id="chart-empty" class="muted center" hidden>No wind data for this period.</p>
+    </section>
+
+    <section class="card">
+      <h2>Forecast</h2>
+      <div id="forecast" class="forecast"><p class="muted">Loading forecast...</p></div>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <h2>RoosterCam</h2>
+        <a href="/roostercam.php"><img id="cam-preview" class="cam" alt="Latest RoosterCam image" src="/roostercam"></a>
+        <p class="small"><a href="/roostercam.php">Open full size</a></p>
+      </section>
+
+      <section class="card">
+        <h2>Tides today</h2>
+        <p class="muted small">Knapp Landing, WA</p>
+        <div id="tides"></div>
+        <h2 class="spaced">Water temp</h2>
+        <p id="water-temp" class="big-temp">--</p>
+      </section>
+
+      <section class="card">
+        <h2>Useful links</h2>
+        <ul class="links">
+          <li><a href="https://thegorgeismygym.com/forecast/" rel="noopener">Temira's wind forecast for Jones and Sauvie Island</a></li>
+          <li><a href="https://wx.ikitesurf.com/search/45.685/-122.724/10" rel="noopener">iKitesurf wind map</a></li>
+          <li><a href="https://www.windy.com/?45.723,-122.816,12" rel="noopener">Windy.com</a></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <footer class="small muted center">
+    Sensor data from Annie. Upriver data from the National Weather Service; forecasts from NOAA models via Open-Meteo; tides from NOAA.
+    Conditions change fast. Use your own judgment on the water.
+  </footer>
+
+  <script src="/static/vendor/chart.umd.js"></script>
+  <script type="module" src="/static/js/main.js"></script>
+</body>
+</html>

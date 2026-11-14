@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RoosterCam | Sauvie Island Wind</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231f3a93'/%3E%3Cpath d='M12 24h30a6 6 0 1 0-6-6M12 36h38a6 6 0 1 1-6 6M12 48h20' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <style>
+    body { margin: 0; background: #0c1319; color: #eef3f8; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; text-align: center; }
+    h1 { font-size: 1.3rem; margin: 0.8rem 0 0.2rem; }
+    p { margin: 0.3rem; color: #9bb0c2; font-size: 0.9rem; }
+    a { color: #5aa9ff; }
+    img { display: block; width: 100%; max-width: 1280px; height: auto; margin: 0.5rem auto; background: #000; }
+  </style>
+</head>
+<body>
+  <h1>RoosterCam</h1>
+  <p id="updated">Loading...</p>
+  <img id="cam" src="/roostercam" alt="Latest RoosterCam image">
+  <p><a href="/">Back to Sauvie Island Wind</a></p>
+  <script>
+    // Reload the picture every minute and show when the camera last uploaded it.
+    async function refresh() {
+      document.getElementById("cam").src = "/roostercam?t=" + Date.now();
+      try {
+        const r = await fetch("/roostercam", { method: "HEAD", cache: "no-store" });
+        const lm = r.headers.get("last-modified");
+        document.getElementById("updated").textContent = lm
+          ? "Image taken " + new Date(lm).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })
+          : "";
+      } catch (e) { document.getElementById("updated").textContent = ""; }
+    }
+    refresh();
+    setInterval(refresh, 60000);
+  </script>
+</body>
+</html>

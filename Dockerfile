@@ -1,33 +1,26 @@
-# For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3.10-slim
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DATA_DIR=/winddata \
+    ROOSTER_DIR=/rooster
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN python -m pip install --no-cache-dir -r requirements.txt
+
+COPY app ./app
+COPY web ./web
+
+# Non-root user. uid 1000 matches the owner of ~/annie_server/winddata on the VPS.
+RUN adduser -u 1000 --disabled-password --gecos "" appuser
+USER appuser
 
 EXPOSE 8000
 
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
+HEALTHCHECK --interval=60s --timeout=5s --start-period=20s --retries=3 \
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/status', timeout=4)"
 
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED=1
-
-# Install pip requirements
-COPY requirements.txt .
-RUN python -m pip install -r requirements.txt
-
-# Install nano
-RUN apt-get update && apt-get install -y nano
-
-WORKDIR /app
-COPY . /app
-
-# Copy and set permissions for entrypoint script
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-RUN adduser -u 1000 --disabled-password --gecos "" appuser && chown -R appuser /app
-USER appuser
-
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "-k", "uvicorn.workers.UvicornWorker", "main:app"]
+# Exactly one worker: the MQTT subscriber and the collectors run inside this process.
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

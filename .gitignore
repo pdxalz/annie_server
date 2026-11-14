@@ -1,7 +1,10 @@
-__pycache__/main.cpython-310.pyc
-winddata/temp.jpg
-winddata/test.db
-winddata/__pycache__/db.cpython-310.pyc
-winddata/images/
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+winddata/*
+!winddata/.gitkeep
+!winddata/site_status.example.json
+dev/rooster/
 .env
 .env.local

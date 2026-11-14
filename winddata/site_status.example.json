@@ -1,0 +1,7 @@
+{
+  "banner": {
+    "enabled": false,
+    "level": "warning",
+    "message": "Annie is down for maintenance. Back soon."
+  }
+}
