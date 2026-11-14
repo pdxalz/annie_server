@@ -34,7 +34,7 @@
 
     <section class="card">
       <h2>Upriver readings</h2>
-      <p class="muted small">Wind often reaches Sauvie after showing up downriver. Longview and St. Helens are airport sensors (updated about hourly).</p>
+      <p class="muted small">Wind often reaches Sauvie after showing up downriver. Longview and Scappoose are airport sensors (~hourly); St. Helens (Model) is Open-Meteo gridded output.</p>
       <div id="river" class="river"></div>
     </section>
 
@@ -55,8 +55,9 @@
       </div>
       <div class="chart-wrap"><canvas id="wind-chart" aria-label="Wind speed chart" role="img"></canvas></div>
       <div class="chart-legend small">
-        <label><input type="checkbox" id="ov-kspb"> St. Helens</label>
-        <label><input type="checkbox" id="ov-kkls"> Longview</label>
+        <label><input type="checkbox" id="ov-st_helens_model"> St. Helens (Model)</label>
+        <label><input type="checkbox" id="ov-kspb"> Scappoose (KSPB)</label>
+        <label><input type="checkbox" id="ov-kkls"> Longview (KKLS)</label>
         <span class="chip flood">Flood tide</span>
         <span class="chip ebb">Ebb tide</span>
         <span class="muted">Arrows show where the wind is blowing toward</span>

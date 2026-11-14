@@ -14,6 +14,7 @@ log = logging.getLogger("collectors")
 # (name, function, interval seconds)
 JOBS: list[tuple[str, Callable[[httpx.AsyncClient], Awaitable[int]], int]] = [
     ("nws", nws.collect, 600),
+    ("st_helens_model", openmeteo.collect_st_helens_current, 600),
     ("openmeteo", openmeteo.collect, 3600),
     ("tides", tides.collect, 6 * 3600),
 ]

@@ -6,6 +6,7 @@ Verified 2026-11-13: ``ncep_hrrr_conus`` (hourly, ~18 h) and ``ncep_rrfs_conus``
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from typing import Optional
 
 import httpx
 
@@ -61,3 +62,35 @@ async def collect(client: httpx.AsyncClient) -> int:
                 )
                 stored += cur.rowcount
     return stored
+
+
+def parse_current(doc: dict) -> Optional[tuple[int, float, Optional[float], Optional[int]]]:
+    """Return (ts_utc, speed_mph, gust_mph, dir_deg) from Open-Meteo's ``current`` block."""
+    cur = doc.get("current") or {}
+    speed = cur.get("wind_speed_10m")
+    if speed is None or not cur.get("time"):
+        return None
+    ts = int(datetime.fromisoformat(cur["time"]).replace(tzinfo=timezone.utc).timestamp())
+    gust = cur.get("wind_gusts_10m")
+    direction = cur.get("wind_direction_10m")
+    return ts, round(float(speed), 1), None if gust is None else round(float(gust), 1), None if direction is None else int(round(direction))
+
+
+async def collect_st_helens_current(client: httpx.AsyncClient) -> int:
+    """Fetch Open-Meteo's current-conditions model point for the St. Helens waterfront."""
+    resp = await client.get(
+        URL,
+        params={
+            "latitude": config.ST_HELENS_LAT,
+            "longitude": config.ST_HELENS_LON,
+            "current": "wind_speed_10m,wind_gusts_10m,wind_direction_10m",
+            "wind_speed_unit": "mph",
+            "timezone": "GMT",
+        },
+    )
+    resp.raise_for_status()
+    parsed = parse_current(resp.json())
+    if parsed is None:
+        return 0
+    ts, speed, gust, direction = parsed
+    return 1 if db.insert_observation("st_helens_model", ts, speed, gust, None, direction) else 0

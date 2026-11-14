@@ -31,14 +31,16 @@ NWS_USER_AGENT = os.environ.get("NWS_USER_AGENT", "(sauviewind.net, pdxalz@gmail
 
 LOCAL_TZ = "America/Los_Angeles"
 
-# Sauvie Island (forecast point) and NOAA stations
+# Sauvie Island (forecast point), St. Helens riverfront (model point), and NOAA stations
 SAUVIE_LAT, SAUVIE_LON = 45.723, -122.816
+ST_HELENS_LAT, ST_HELENS_LON = 45.866, -122.798
 TIDE_STATION = "9440171"
 WATER_TEMP_STATION = "9440422"
 
-# station id -> (label, kind). 'annie' is our own sensor, the rest are NWS airports.
+# station id -> label, source, stale threshold.
 STATIONS = {
     "annie": {"label": "Sauvie (Annie)", "source": "sensor", "stale_minutes": 30},
-    "kspb": {"label": "St. Helens", "source": "nws", "stale_minutes": 120},
-    "kkls": {"label": "Longview", "source": "nws", "stale_minutes": 120},
+    "kspb": {"label": "Scappoose (KSPB)", "source": "nws", "stale_minutes": 120},
+    "st_helens_model": {"label": "St. Helens (Model)", "source": "model", "stale_minutes": 60},
+    "kkls": {"label": "Longview (KKLS)", "source": "nws", "stale_minutes": 120},
 }

@@ -4,8 +4,9 @@ const css = (name) => getComputedStyle(document.documentElement).getPropertyValu
 const GAP_SEC = 45 * 60; // break the line if a sensor goes quiet for this long
 
 const OVERLAYS = {
-  kspb: { label: "St. Helens", color: "#e8890c" },
-  kkls: { label: "Longview", color: "#9b59b6" },
+  st_helens_model: { label: "St. Helens (Model)", color: "#17a2b8", dash: [5, 4] },
+  kspb: { label: "Scappoose (KSPB)", color: "#e8890c" },
+  kkls: { label: "Longview (KKLS)", color: "#9b59b6" },
 };
 
 /** Convert a column series into chart points, inserting a null point at gaps so lines break. */
@@ -176,7 +177,17 @@ export function updateChart(chart, data, tides) {
   for (const [key, meta] of Object.entries(OVERLAYS)) {
     const s = data.stations[key];
     if (!s) continue;
-    datasets.push({ label: meta.label, data: toPoints(s, "speed"), borderColor: meta.color, backgroundColor: meta.color, borderWidth: 2, pointRadius: 3, pointHoverRadius: 5, tension: 0.2 });
+    datasets.push({
+      label: meta.label,
+      data: toPoints(s, "speed"),
+      borderColor: meta.color,
+      backgroundColor: meta.color,
+      borderWidth: 2,
+      borderDash: meta.dash || [],
+      pointRadius: 3,
+      pointHoverRadius: 5,
+      tension: 0.2,
+    });
   }
 
   const hoursSpan = (data.end - data.start) / 3600;

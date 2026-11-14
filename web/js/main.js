@@ -61,6 +61,7 @@ async function refreshCurrent() {
 
 async function refreshChart() {
   const stations = ["annie"];
+  if ($("ov-st_helens_model").checked) stations.push("st_helens_model");
   if ($("ov-kspb").checked) stations.push("kspb");
   if ($("ov-kkls").checked) stations.push("kkls");
   try {
@@ -119,7 +120,7 @@ function wireControls() {
   });
   $("live-btn").addEventListener("click", () => setDate(null));
 
-  for (const key of ["kspb", "kkls"]) {
+  for (const key of ["st_helens_model", "kspb", "kkls"]) {
     const box = $(`ov-${key}`);
     box.checked = !!savedOverlays[key];
     box.addEventListener("change", () => {

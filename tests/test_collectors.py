@@ -70,6 +70,12 @@ def test_open_meteo_retired_model_is_all_null():
     assert openmeteo.parse_forecast(nam, 0) == []
 
 
+def test_open_meteo_parse_current():
+    doc = {"current": {"time": "2026-11-14T20:30", "wind_speed_10m": 8.54, "wind_gusts_10m": 14.22, "wind_direction_10m": 270}}
+    assert openmeteo.parse_current(doc) == (utc("2026-11-14 20:30"), 8.5, 14.2, 270)
+    assert openmeteo.parse_current({"current": {"time": "2026-11-14T20:30", "wind_speed_10m": None}}) is None
+
+
 def test_tide_parse():
     doc = {"predictions": [
         {"t": "2026-11-13 03:10", "v": "3.356", "type": "H"},

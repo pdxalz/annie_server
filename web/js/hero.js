@@ -57,8 +57,8 @@ export function renderHero(current) {
 
 export function renderRiver(current) {
   const el = document.getElementById("river");
-  // Upriver sensors first, so you read left to right in the direction a sea breeze travels.
-  const order = ["kkls", "kspb", "annie"];
+  // Upriver stations first (north -> south), so you read left to right in the direction a sea breeze travels.
+  const order = ["kkls", "st_helens_model", "kspb", "annie"];
   el.innerHTML = order
     .map((key) => {
       const s = current.stations[key];
