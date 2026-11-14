@@ -92,6 +92,8 @@ def now_epoch() -> int:
 def backfill_from_legacy() -> int:
     """Copy legacy ``wind`` rows into ``observations`` (idempotent)."""
     with connect() as conn:
+        if conn.execute("SELECT 1 FROM meta WHERE key='backfill_v1_done'").fetchone():
+            return 0
         legacy = conn.execute("SELECT COUNT(*) FROM wind").fetchone()[0]
         done = conn.execute(
             "SELECT COUNT(*) FROM observations WHERE station='annie'"
@@ -113,6 +115,11 @@ def backfill_from_legacy() -> int:
                 (ts, row["avg"], row["gust"], row["lull"], row["dir"]),
             )
             inserted += cur.rowcount
+        conn.execute(
+            "INSERT INTO meta VALUES ('backfill_v1_done', '1', ?) "
+            "ON CONFLICT(key) DO UPDATE SET value='1', updated_utc=excluded.updated_utc",
+            (now_epoch(),),
+        )
         log.info("Backfill: %d inserted, %d unparsable rows skipped", inserted, skipped)
         return inserted
 
