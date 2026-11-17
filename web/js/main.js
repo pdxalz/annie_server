@@ -3,7 +3,7 @@ import { fmtTime, pacificDay } from "./format.js";
 import { renderBanners, renderHero, renderRiver, renderWaterTemp } from "./hero.js";
 import { renderForecast } from "./forecast.js";
 import { initTheme } from "./theme.js";
-import { createChart, retheme, updateChart } from "./windchart.js";
+import { createChart, retheme, updateChart } from "./windchart.js?v=3";
 
 const $ = (id) => document.getElementById(id);
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;

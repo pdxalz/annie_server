@@ -18,21 +18,33 @@ db.init_db()
 now = int(time.time())
 now -= now % 600
 
-# Annie: 3 days of 10 minute readings with a sea-breeze style afternoon build-up.
+with db.connect() as conn:
+    conn.execute("DELETE FROM observations")
+    conn.execute("DELETE FROM tide_events")
+    conn.execute("DELETE FROM forecasts")
+
+# Annie: 3 days of 10-minute readings with a smooth daily thermal cycle.
+# Shift phase relative to `now` so the last 6 hours always show an active afternoon-style breeze.
+peak_offset_h = ((now / 3600) - 2.5) % 24
 for i in range(3 * 144, 0, -1):
     t = now - i * 600
-    hour = ((t // 3600) - 8) % 24  # roughly Pacific local hour
-    base = 4 + 14 * max(0, math.sin((hour - 9) / 9 * math.pi)) if 9 <= hour <= 18 else 3
-    speed = max(0, base + random.uniform(-1.5, 1.5))
-    db.insert_observation("annie", t, round(speed), round(speed + random.uniform(3, 8)), max(0, round(speed - random.uniform(2, 4))), int(250 + 40 * math.sin(i / 20) + random.randint(-10, 10)) % 360)
+    phase = ((t / 3600) - peak_offset_h + 4.5) % 24
+    base = 5 + 12 * math.sin(phase / 9 * math.pi) if 0 <= phase <= 9 else 5
+    speed = max(2, base + random.uniform(-1.2, 1.2))
+    gust = round(speed + random.uniform(3, 6))
+    lull = max(1, round(speed - random.uniform(1.5, 3)))
+    direction = int(250 + 35 * math.sin(i / 20) + random.randint(-8, 8)) % 360
+    db.insert_observation("annie", t, round(speed), gust, lull, direction)
 
-# NWS airports: hourly, a bit ahead of Sauvie.
-for key, shift in (("kspb", 1.0), ("kkls", 1.3)):
+# Upriver & model stations: hourly, slightly ahead of Sauvie.
+for key, shift, lead_h in (("st_helens_model", 1.05, 0.5), ("kspb", 0.95, 0.8), ("kkls", 1.15, 1.2)):
     for i in range(3 * 24, 0, -1):
         t = now - i * 3600 + 1800
-        hour = ((t // 3600) - 8) % 24
-        base = 3 + 15 * max(0, math.sin((hour - 8) / 9 * math.pi)) if 8 <= hour <= 17 else 3
-        db.insert_observation(key, t, round(base * shift, 1), None if random.random() < 0.5 else round(base * shift + 6, 1), None, int(240 + random.randint(-25, 25)) % 360)
+        phase = ((t / 3600) - peak_offset_h + 4.5 + lead_h) % 24
+        base = 4 + 12 * math.sin(phase / 9 * math.pi) if 0 <= phase <= 9 else 4
+        spd = round(base * shift, 1)
+        gst = None if random.random() < 0.4 else round(spd + 5, 1)
+        db.insert_observation(key, t, spd, gst, None, int(240 + random.randint(-20, 20)) % 360)
 
 # Tides: roughly every 6 h 12 min alternating H/L, two days back to four days ahead.
 t, kind = now - 2 * 86400, "L"

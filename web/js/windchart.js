@@ -1,22 +1,21 @@
 import { compass, fmtHour, fmtTime, pacificOffsetMs } from "./format.js";
 
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-const GAP_SEC = 45 * 60; // break the line if a sensor goes quiet for this long
+const isCompact = () => window.matchMedia("(max-width: 640px), (hover: none)").matches;
 
 const OVERLAYS = {
-  st_helens_model: { label: "St. Helens (Model)", color: "#17a2b8", dash: [5, 4] },
-  kspb: { label: "Scappoose (KSPB)", color: "#e8890c" },
-  kkls: { label: "Longview (KKLS)", color: "#9b59b6" },
+  st_helens_model: { label: "St. Helens (Model)", color: "rgba(23, 162, 184, 0.52)", dash: [5, 4] },
+  kspb: { label: "Scappoose (KSPB)", color: "rgba(217, 130, 43, 0.52)", dash: [8, 4] },
+  kkls: { label: "Longview (KKLS)", color: "rgba(155, 89, 182, 0.52)", dash: [3, 3] },
 };
 
-/** Convert a column series into chart points, inserting a null point at gaps so lines break. */
+/** Convert a column series into chart points, skipping missing values so lines connect. */
 function toPoints(series, field, withDir = false) {
   const pts = [];
   for (let i = 0; i < series.t.length; i++) {
-    if (i > 0 && series.t[i] - series.t[i - 1] > GAP_SEC) {
-      pts.push({ x: ((series.t[i] + series.t[i - 1]) / 2) * 1000, y: null });
-    }
-    const p = { x: series.t[i] * 1000, y: series[field][i] };
+    const y = series[field][i];
+    if (y == null) continue;
+    const p = { x: series.t[i] * 1000, y };
     if (withDir) p.d = series.dir[i];
     pts.push(p);
   }
@@ -109,6 +108,41 @@ function applyTheme(chart) {
   chart.options.plugins.legend.labels.color = css("--text");
 }
 
+function clearTooltip(chart) {
+  chart.setActiveElements([]);
+  chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+  chart.update("none");
+  const readout = document.getElementById("chart-readout");
+  if (readout) readout.hidden = true;
+}
+
+function renderExternalReadout(context) {
+  const readout = document.getElementById("chart-readout");
+  const textEl = document.getElementById("chart-readout-text");
+  if (!readout || !textEl) return;
+  const { tooltip } = context;
+  if (!isCompact() || tooltip.opacity === 0 || !tooltip.dataPoints || !tooltip.dataPoints.length) {
+    readout.hidden = true;
+    return;
+  }
+  textEl.textContent = "";
+  const timeEl = document.createElement("strong");
+  timeEl.textContent = fmtTime(tooltip.dataPoints[0].parsed.x / 1000);
+  textEl.appendChild(timeEl);
+  for (const item of tooltip.dataPoints) {
+    const span = document.createElement("span");
+    span.className = "chart-readout-item";
+    const swatch = document.createElement("span");
+    swatch.className = "chart-readout-swatch";
+    swatch.style.backgroundColor = item.dataset.borderColor;
+    const dir = item.raw && item.raw.d != null ? ` ${compass(item.raw.d)}` : "";
+    span.appendChild(swatch);
+    span.appendChild(document.createTextNode(`${item.dataset.label} ${item.parsed.y} mph${dir}`));
+    textEl.appendChild(span);
+  }
+  readout.hidden = false;
+}
+
 export function createChart(canvas) {
   const chart = new Chart(canvas, {
     type: "line",
@@ -118,6 +152,7 @@ export function createChart(canvas) {
       responsive: true,
       maintainAspectRatio: false,
       animation: false,
+      spanGaps: true,
       parsing: false,
       normalized: true,
       layout: { padding: { top: 36 } },
@@ -142,6 +177,8 @@ export function createChart(canvas) {
       plugins: {
         legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } },
         tooltip: {
+          enabled: !isCompact(),
+          external: renderExternalReadout,
           callbacks: {
             title: (items) => (items.length ? fmtTime(items[0].parsed.x / 1000) : ""),
             label: (item) => {
@@ -154,6 +191,23 @@ export function createChart(canvas) {
     },
   });
   applyTheme(chart);
+
+  const readout = document.getElementById("chart-readout");
+  const closeBtn = document.getElementById("chart-readout-close");
+  if (closeBtn) closeBtn.addEventListener("click", () => clearTooltip(chart));
+  document.addEventListener("pointerdown", (e) => {
+    if (e.target !== canvas && (!readout || !readout.contains(e.target))) {
+      clearTooltip(chart);
+    }
+  });
+  window.addEventListener("resize", () => {
+    const enabled = !isCompact();
+    if (chart.options.plugins.tooltip.enabled !== enabled) {
+      chart.options.plugins.tooltip.enabled = enabled;
+      clearTooltip(chart);
+    }
+  });
+
   return chart;
 }
 
@@ -170,9 +224,9 @@ export function retheme(chart) {
 export function updateChart(chart, data, tides) {
   const annie = data.stations.annie;
   const datasets = [
-    { label: "Wind", data: toPoints(annie, "speed", true), borderColor: css("--speed"), backgroundColor: css("--speed"), borderWidth: 3, pointRadius: 0, pointHoverRadius: 4, tension: 0.25 },
-    { label: "Gust", data: toPoints(annie, "gust"), borderColor: css("--gust"), backgroundColor: css("--gust"), borderWidth: 1.6, pointRadius: 0, pointHoverRadius: 4, tension: 0.25 },
-    { label: "Lull", data: toPoints(annie, "lull"), borderColor: css("--lull"), backgroundColor: css("--lull"), borderWidth: 1.2, borderDash: [4, 3], pointRadius: 0, pointHoverRadius: 4, tension: 0.25 },
+    { label: "Wind", data: toPoints(annie, "speed", true), borderColor: css("--speed"), backgroundColor: css("--speed"), borderWidth: 3, pointRadius: 0, pointHoverRadius: 4, tension: 0.25, cubicInterpolationMode: "monotone" },
+    { label: "Gust", data: toPoints(annie, "gust"), borderColor: css("--gust"), backgroundColor: css("--gust"), borderWidth: 1.6, pointRadius: 0, pointHoverRadius: 4, tension: 0.25, cubicInterpolationMode: "monotone" },
+    { label: "Lull", data: toPoints(annie, "lull"), borderColor: css("--lull"), backgroundColor: css("--lull"), borderWidth: 1.2, pointRadius: 0, pointHoverRadius: 4, tension: 0.25, cubicInterpolationMode: "monotone" },
   ];
   for (const [key, meta] of Object.entries(OVERLAYS)) {
     const s = data.stations[key];
@@ -182,11 +236,12 @@ export function updateChart(chart, data, tides) {
       data: toPoints(s, "speed"),
       borderColor: meta.color,
       backgroundColor: meta.color,
-      borderWidth: 2,
-      borderDash: meta.dash || [],
-      pointRadius: 3,
-      pointHoverRadius: 5,
+      borderWidth: 1.6,
+      borderDash: meta.dash,
+      pointRadius: 0,
+      pointHoverRadius: 4,
       tension: 0.2,
+      cubicInterpolationMode: "monotone",
     });
   }
 
