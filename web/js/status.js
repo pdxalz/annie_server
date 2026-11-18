@@ -1,8 +1,9 @@
-import { fmtHour, fmtTime } from "./format.js";
+import { fmtHour, fmtTime, pacificOffsetMs } from "./format.js";
 import { initTheme } from "./theme.js";
 
 const $ = (id) => document.getElementById(id);
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const fmtDay = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", month: "numeric", day: "numeric" });
 
 let healthHours = 24;
 let healthChart;
@@ -57,7 +58,20 @@ function createHealthChart(canvas) {
         x: {
           type: "linear",
           grid: { color: css("--border") },
-          ticks: { color: css("--muted"), maxRotation: 0, callback: (v) => fmtHour(v / 1000) },
+          ticks: {
+            color: css("--muted"),
+            maxRotation: 0,
+            callback: (v) => (healthHours > 24 ? fmtDay.format(new Date(v)) : fmtHour(v / 1000)),
+          },
+          afterBuildTicks(scale) {
+            const step = (healthHours > 24 ? 24 : 3) * 3600e3;
+            const off = pacificOffsetMs(scale.min);
+            const ticks = [];
+            for (let t = Math.ceil((scale.min + off) / step) * step - off; t <= scale.max; t += step) {
+              ticks.push({ value: t });
+            }
+            scale.ticks = ticks;
+          },
         },
         yMv: {
           type: "linear",
@@ -122,6 +136,9 @@ function renderSensorHealth(data) {
 
   const s = data.sensor_health.series;
   $("health-empty").hidden = s.t.length > 0;
+  const nowMs = Date.now();
+  healthChart.options.scales.x.min = nowMs - healthHours * 3600e3;
+  healthChart.options.scales.x.max = nowMs;
   healthChart.data.datasets = [
     {
       label: "Battery (mV)",
