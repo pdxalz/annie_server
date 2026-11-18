@@ -36,6 +36,17 @@ CREATE TABLE IF NOT EXISTS tide_events (
 CREATE TABLE IF NOT EXISTS meta (
   key TEXT PRIMARY KEY, value TEXT, updated_utc INTEGER
 );
+CREATE TABLE IF NOT EXISTS sensor_health (
+  ts_utc INTEGER PRIMARY KEY,
+  mv     INTEGER,
+  temp_f REAL
+);
+CREATE TABLE IF NOT EXISTS page_hits (
+  day  TEXT    NOT NULL,
+  path TEXT    NOT NULL,
+  hits INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (day, path)
+) WITHOUT ROWID;
 """
 
 
@@ -155,4 +166,23 @@ def set_meta(key: str, value: str) -> None:
             "INSERT INTO meta VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE "
             "SET value=excluded.value, updated_utc=excluded.updated_utc",
             (key, value, now_epoch()),
+        )
+
+
+def insert_sensor_health(ts_utc: int, mv: int, temp_f: float) -> bool:
+    with connect() as conn:
+        cur = conn.execute(
+            "INSERT OR IGNORE INTO sensor_health VALUES (?, ?, ?)",
+            (ts_utc, mv, temp_f),
+        )
+        return cur.rowcount > 0
+
+
+def record_page_hit(path: str) -> None:
+    day = datetime.now(LOCAL).strftime("%Y-%m-%d")
+    with connect() as conn:
+        conn.execute(
+            "INSERT INTO page_hits (day, path, hits) VALUES (?, ?, 1) "
+            "ON CONFLICT(day, path) DO UPDATE SET hits = hits + 1",
+            (day, path),
         )

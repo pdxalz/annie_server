@@ -60,12 +60,19 @@ def roostercam_image():
 @router.get("/roostercam.php")
 def roostercam_page():
     # Many people have bookmarked this odd name; keep serving it.
+    db.record_page_hit("/roostercam.php")
     return FileResponse(config.WEB_DIR / "roostercam.html", headers=NO_CACHE)
 
 
 @router.get("/")
 def index():
+    db.record_page_hit("/")
     return FileResponse(config.WEB_DIR / "index.html", headers=NO_CACHE)
+
+
+@router.get("/status")
+def status_page():
+    return FileResponse(config.WEB_DIR / "status.html", headers=NO_CACHE)
 
 
 # v1 pages that no longer exist as separate pages: send people to the main page.

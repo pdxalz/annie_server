@@ -29,3 +29,17 @@ def test_malformed_messages_do_not_raise():
         assert mqtt_sub.handle_wind_payload(bad) is False
     with db.connect() as conn:
         assert conn.execute("SELECT COUNT(*) FROM observations").fetchone()[0] == 0
+
+
+def test_health_message_stores_latest_sample():
+    payload = json.dumps({"pwr": [[4170, 54.1], [4165, 53.3]]}).encode()
+    assert mqtt_sub.handle_health_payload(payload) is True
+    with db.connect() as conn:
+        rows = conn.execute("SELECT mv, temp_f FROM sensor_health").fetchall()
+    assert len(rows) == 1
+    assert (rows[0]["mv"], rows[0]["temp_f"]) == (4170, 54.1)
+
+
+def test_malformed_health_messages_do_not_raise():
+    for bad in (b"bad", b"{}", b'{"pwr": []}', b'{"pwr": [[0, 50.0]]}'):
+        assert mqtt_sub.handle_health_payload(bad) is False

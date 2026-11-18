@@ -35,6 +35,30 @@ def handle_wind_payload(payload: bytes) -> bool:
     return stored
 
 
+def handle_health_payload(payload: bytes) -> bool:
+    """Parse one Annie health message and store the newest [mV, temp_f] sample.
+
+    Payload: {"pwr": [[4170, 54.1], ...]} where index 0 is the latest reading.
+    """
+    try:
+        msg = json.loads(payload)
+        pwr = msg["pwr"]
+        if not isinstance(pwr, list) or not pwr:
+            raise ValueError("empty pwr list")
+        mv = int(pwr[0][0])
+        temp_f = float(pwr[0][1])
+        if mv <= 0:
+            raise ValueError(f"invalid mv {mv}")
+    except (ValueError, KeyError, TypeError, IndexError) as exc:
+        log.warning("Ignoring malformed health message %r: %s", payload[:200], exc)
+        return False
+
+    stored = db.insert_sensor_health(db.now_epoch(), mv, temp_f)
+    if stored:
+        log.info("Annie health: %d mV, %.1f F", mv, temp_f)
+    return stored
+
+
 _client = None
 
 
@@ -56,15 +80,18 @@ def start() -> Optional[object]:
         if reason_code == 0:
             log.info("Connected to MQTT broker %s:%s", config.MQTT_HOST, config.MQTT_PORT)
             c.subscribe(config.TOPIC_WIND, qos=1)
+            c.subscribe(config.TOPIC_HEALTH, qos=1)
         else:
             log.error("MQTT connection refused: %s (check MQTT_USRNM / MQTT_PSWD)", reason_code)
 
     def on_message(c, userdata, message):
-        if message.topic == config.TOPIC_WIND:
-            try:
+        try:
+            if message.topic == config.TOPIC_WIND:
                 handle_wind_payload(message.payload)
-            except Exception:  # never let a bad message kill the network thread
-                log.exception("Failed to store wind message")
+            elif message.topic == config.TOPIC_HEALTH:
+                handle_health_payload(message.payload)
+        except Exception:  # never let a bad message kill the network thread
+            log.exception("Failed to store MQTT message on %s", message.topic)
 
     client.on_connect = on_connect
     client.on_message = on_message

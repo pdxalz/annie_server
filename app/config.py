@@ -23,6 +23,7 @@ MQTT_USERNAME = os.environ.get("MQTT_USRNM")
 MQTT_PASSWORD = os.environ.get("MQTT_PSWD")
 MQTT_ENABLED = os.environ.get("MQTT_ENABLED", "1") != "0"
 TOPIC_WIND = "zimbuktu/wind"
+TOPIC_HEALTH = "zimbuktu/health"
 
 # Background collectors
 COLLECTORS_ENABLED = os.environ.get("COLLECTORS_ENABLED", "1") != "0"

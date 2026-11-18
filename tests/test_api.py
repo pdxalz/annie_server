@@ -153,3 +153,23 @@ def test_retired_image_routes_are_gone(client):
 def test_database_file_is_not_downloadable(client):
     for path in ("/static/../test.db", "/static/%2e%2e/test.db", "/rooster/../test.db", "/test.db"):
         assert client.get(path).status_code in (404, 400)
+
+
+def test_system_status_page_and_api(client):
+    assert client.get("/").status_code == 200
+    assert client.get("/").status_code == 200
+    assert client.get("/roostercam.php").status_code == 200
+    page = client.get("/status")
+    assert page.status_code == 200 and "text/html" in page.headers["content-type"]
+
+    db.insert_sensor_health(int(time.time()) - 60, 4170, 54.1)
+    data = client.get("/api/v1/system_status?hours=24").json()
+    assert data["hits"]["today"]["total"] == 3
+    assert data["hits"]["today"]["/"] == 2
+    assert data["hits"]["today"]["/roostercam.php"] == 1
+    assert data["hits"]["all_time"]["total"] == 3
+    assert data["server"]["disk"]["total_bytes"] > 0
+    assert data["server"]["db_bytes"] > 0
+    assert data["sensor_health"]["latest"]["mv"] == 4170
+    assert data["sensor_health"]["latest"]["volts"] == 4.17
+    assert data["sensor_health"]["series"]["temp_f"] == [54.1]

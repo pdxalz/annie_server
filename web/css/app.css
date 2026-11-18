@@ -169,3 +169,22 @@ img.cam { width: 100%; height: auto; border-radius: 8px; display: block; backgro
 #tides td { padding: 0.25rem 0.2rem; border-bottom: 1px solid var(--border); }
 .big-temp { font-size: 1.8rem; font-weight: 700; margin: 0; }
 footer { max-width: 1100px; margin: 0 auto; padding: 0.5rem 1rem 2rem; }
+
+/* System status page */
+.topbar-actions { display: flex; align-items: center; gap: 0.75rem; }
+.topbar-link { color: #fff; font-weight: 600; font-size: 0.9rem; text-decoration: none; opacity: 0.9; }
+.topbar-link:hover { text-decoration: underline; opacity: 1; }
+.chart-wrap-sm { height: clamp(200px, 38vw, 300px); }
+.stat-grid { display: grid; gap: 0.5rem; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 0.75rem; }
+.stat-box { border: 1px solid var(--border); border-radius: 10px; padding: 0.55rem 0.75rem; background: var(--bg); }
+.stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.stat-val { font-size: 1.35rem; font-weight: 800; line-height: 1.25; }
+.stat-sub { font-size: 0.75rem; color: var(--muted); }
+.table-scroll { overflow-x: auto; max-height: 260px; }
+.status-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.status-table th, .status-table td { padding: 0.35rem 0.45rem; border-bottom: 1px solid var(--border); text-align: left; }
+.status-table td:last-child, .status-table th:not(:first-child) { text-align: right; }
+.status-table td:first-child { color: var(--muted); }
+.disk-bar-wrap { margin-bottom: 0.65rem; }
+.disk-bar { height: 8px; border-radius: 999px; background: var(--border); overflow: hidden; margin-top: 0.3rem; }
+.disk-bar-fill { height: 100%; background: var(--accent); border-radius: 999px; }

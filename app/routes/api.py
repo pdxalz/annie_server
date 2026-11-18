@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import re
+import shutil
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
@@ -10,6 +12,7 @@ from fastapi import APIRouter, HTTPException, Query
 from .. import config, db, status
 
 router = APIRouter(prefix="/api/v1")
+_STARTED_UTC = db.now_epoch()
 
 DAY_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 ALLOWED_HOURS = (3, 6, 12, 24)
@@ -182,3 +185,109 @@ def get_tides(
         for r in (*before, *inside, *after)
     ]
     return {"start": start, "end": end, "events": events}
+
+
+def _db_size_bytes() -> int:
+    total = 0
+    for suffix in ("", "-wal", "-shm"):
+        p = Path(str(config.DATABASE) + suffix)
+        if p.exists():
+            total += p.stat().st_size
+    return total
+
+
+@router.get("/system_status")
+def get_system_status(hours: int = Query(24, ge=1, le=168)):
+    """Server health, storage, page hits, and Annie battery/temperature history."""
+    now = db.now_epoch()
+    today_day = datetime.now(db.LOCAL).strftime("%Y-%m-%d")
+    usage = shutil.disk_usage(config.DATA_DIR)
+
+    if config.ROOSTER_IMAGE.exists():
+        st = config.ROOSTER_IMAGE.stat()
+        rooster = {"exists": True, "size_bytes": st.st_size, "mtime_utc": int(st.st_mtime)}
+    else:
+        rooster = {"exists": False, "size_bytes": 0, "mtime_utc": None}
+
+    with db.connect() as conn:
+        counts = {
+            tbl: conn.execute(f"SELECT COUNT(*) FROM {tbl}").fetchone()[0]
+            for tbl in ("observations", "forecasts", "tide_events", "sensor_health")
+        }
+        last_obs = {
+            r["station"]: r["ts"]
+            for r in conn.execute(
+                "SELECT station, MAX(ts_utc) AS ts FROM observations GROUP BY station"
+            ).fetchall()
+        }
+        last_forecast = conn.execute("SELECT MAX(issued_utc) FROM forecasts").fetchone()[0]
+        last_health_row = conn.execute(
+            "SELECT ts_utc, mv, temp_f FROM sensor_health ORDER BY ts_utc DESC LIMIT 1"
+        ).fetchone()
+        health_rows = conn.execute(
+            "SELECT ts_utc, mv, temp_f FROM sensor_health WHERE ts_utc>=? ORDER BY ts_utc",
+            (now - hours * 3600,),
+        ).fetchall()
+
+        all_time_rows = conn.execute(
+            "SELECT path, SUM(hits) AS total FROM page_hits GROUP BY path"
+        ).fetchall()
+        daily_rows = conn.execute(
+            "SELECT day, path, hits FROM page_hits "
+            "WHERE day >= date(?, '-29 days') ORDER BY day DESC, path",
+            (today_day,),
+        ).fetchall()
+
+    all_time_map = {r["path"]: r["total"] for r in all_time_rows}
+    daily_map: dict[str, dict[str, int]] = {}
+    for r in daily_rows:
+        bucket = daily_map.setdefault(r["day"], {"total": 0})
+        bucket[r["path"]] = r["hits"]
+        bucket["total"] += r["hits"]
+    today_counts = daily_map.get(today_day, {"total": 0})
+
+    latest_health = None
+    if last_health_row is not None:
+        latest_health = {
+            "ts_utc": last_health_row["ts_utc"],
+            "mv": last_health_row["mv"],
+            "volts": round(last_health_row["mv"] / 1000.0, 2) if last_health_row["mv"] is not None else None,
+            "temp_f": last_health_row["temp_f"],
+        }
+
+    return {
+        "server": {
+            "started_utc": _STARTED_UTC,
+            "uptime_seconds": max(0, now - _STARTED_UTC),
+            "disk": {
+                "total_bytes": usage.total,
+                "used_bytes": usage.used,
+                "free_bytes": usage.free,
+            },
+            "db_bytes": _db_size_bytes(),
+            "roostercam": rooster,
+            "counts": counts,
+            "last_updates_utc": {
+                "annie_wind": last_obs.get("annie"),
+                "annie_health": latest_health["ts_utc"] if latest_health else None,
+                "kspb": last_obs.get("kspb"),
+                "st_helens_model": last_obs.get("st_helens_model"),
+                "kkls": last_obs.get("kkls"),
+                "forecast": last_forecast,
+            },
+        },
+        "hits": {
+            "today_day": today_day,
+            "today": today_counts,
+            "all_time": {"total": sum(all_time_map.values()), **all_time_map},
+            "daily": [{"day": d, **vals} for d, vals in daily_map.items()],
+        },
+        "sensor_health": {
+            "latest": latest_health,
+            "series": {
+                "t": [r["ts_utc"] for r in health_rows],
+                "mv": [r["mv"] for r in health_rows],
+                "temp_f": [r["temp_f"] for r in health_rows],
+            },
+        },
+    }
