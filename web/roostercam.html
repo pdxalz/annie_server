@@ -2,36 +2,207 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>RoosterCam | Sauvie Island Wind</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231f3a93'/%3E%3Cpath d='M12 24h30a6 6 0 1 0-6-6M12 36h38a6 6 0 1 1-6 6M12 48h20' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
   <style>
-    body { margin: 0; background: #0c1319; color: #eef3f8; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; text-align: center; }
-    h1 { font-size: 1.3rem; margin: 0.8rem 0 0.2rem; }
-    p { margin: 0.3rem; color: #9bb0c2; font-size: 0.9rem; }
-    a { color: #5aa9ff; }
-    img { display: block; width: 100%; max-width: 1280px; height: auto; margin: 0.5rem auto; background: #000; }
+    :root {
+      --bar-bg: rgba(10, 16, 22, 0.74);
+      --bar-border: rgba(255, 255, 255, 0.14);
+      --text: #eef3f8;
+      --muted: #9eb2c4;
+      --accent: #4fa3ff;
+      --live: #3dd66b;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: #05080c;
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      -webkit-text-size-adjust: 100%;
+    }
+    .stage {
+      position: relative;
+      width: 100vw;
+      height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #05080c;
+    }
+    .stage img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      background: var(--bar-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .top-bar {
+      top: 0;
+      justify-content: space-between;
+      padding: max(0.55rem, env(safe-area-inset-top)) max(0.85rem, env(safe-area-inset-right)) 0.55rem max(0.85rem, env(safe-area-inset-left));
+      border-bottom: 1px solid var(--bar-border);
+    }
+    .top-left, .top-right {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      min-width: 0;
+    }
+    .back-link {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0.35rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid var(--bar-border);
+      background: rgba(255, 255, 255, 0.06);
+      white-space: nowrap;
+    }
+    .back-link:hover { background: rgba(255, 255, 255, 0.14); }
+    .title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .meta {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.88rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 0.18rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      flex: none;
+    }
+    .badge.live {
+      background: rgba(61, 214, 107, 0.18);
+      color: var(--live);
+    }
+    .badge.live::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--live);
+    }
+    .bottom-bar {
+      bottom: 0;
+      padding: 0.65rem max(0.85rem, env(safe-area-inset-right)) max(0.65rem, env(safe-area-inset-bottom)) max(0.85rem, env(safe-area-inset-left));
+      border-top: 1px solid var(--bar-border);
+      flex-wrap: nowrap;
+    }
+    .ctrl-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.5rem;
+      height: 2.5rem;
+      padding: 0 0.65rem;
+      border-radius: 9px;
+      border: 1px solid var(--bar-border);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      flex: none;
+    }
+    .ctrl-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.16); }
+    .ctrl-btn:disabled { opacity: 0.35; cursor: default; }
+    .ctrl-btn.primary {
+      background: var(--accent);
+      border-color: transparent;
+      color: #061322;
+    }
+    .ctrl-btn.primary:hover:not(:disabled) { filter: brightness(1.08); }
+    .scrubber-wrap {
+      flex: 1 1 auto;
+      min-width: 80px;
+      display: flex;
+      align-items: center;
+    }
+    input[type="range"] {
+      width: 100%;
+      height: 6px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      margin: 0;
+    }
+    .fs-btn {
+      min-width: 2.3rem;
+      height: 2.3rem;
+      padding: 0 0.5rem;
+    }
+    @media (max-width: 560px) {
+      .title { display: none; }
+      .meta { font-size: 0.8rem; }
+      .ctrl-btn { min-width: 2.3rem; height: 2.3rem; padding: 0 0.5rem; font-size: 0.88rem; }
+    }
   </style>
 </head>
 <body>
-  <h1>RoosterCam</h1>
-  <p id="updated">Loading...</p>
-  <img id="cam" src="/roostercam" alt="Latest RoosterCam image">
-  <p><a href="/">Back to Sauvie Island Wind</a></p>
-  <script>
-    // Reload the picture every minute and show when the camera last uploaded it.
-    async function refresh() {
-      document.getElementById("cam").src = "/roostercam?t=" + Date.now();
-      try {
-        const r = await fetch("/roostercam", { method: "HEAD", cache: "no-store" });
-        const lm = r.headers.get("last-modified");
-        document.getElementById("updated").textContent = lm
-          ? "Image taken " + new Date(lm).toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })
-          : "";
-      } catch (e) { document.getElementById("updated").textContent = ""; }
-    }
-    refresh();
-    setInterval(refresh, 60000);
-  </script>
+  <div id="stage" class="stage">
+    <header class="bar top-bar">
+      <div class="top-left">
+        <a class="back-link" href="/">&#8592; Wind</a>
+        <h1 class="title">RoosterCam</h1>
+      </div>
+      <div class="top-right">
+        <div class="meta">
+          <span id="frame-badge" class="badge live">LIVE</span>
+          <span id="frame-time">Loading...</span>
+        </div>
+        <button id="fs-btn" class="ctrl-btn fs-btn" type="button" aria-label="Toggle fullscreen" title="Fullscreen">&#x26F6;</button>
+      </div>
+    </header>
+
+    <img id="cam" src="/roostercam" alt="RoosterCam view of the Columbia River">
+
+    <footer class="bar bottom-bar">
+      <button id="prev-btn" class="ctrl-btn" type="button" aria-label="Previous image" title="Previous">&#8592;</button>
+      <button id="play-btn" class="ctrl-btn" type="button" aria-label="Play timelapse" title="Play timelapse">&#9654;&#xFE0E;</button>
+      <button id="next-btn" class="ctrl-btn" type="button" aria-label="Next image" title="Next">&#8594;</button>
+      <div class="scrubber-wrap">
+        <input id="scrubber" type="range" min="0" max="0" value="0" aria-label="Image timeline" disabled>
+      </div>
+      <button id="live-btn" class="ctrl-btn" type="button" disabled>Live</button>
+    </footer>
+  </div>
+
+  <script type="module" src="/static/js/roostercam.js?v=1"></script>
 </body>
 </html>

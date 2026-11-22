@@ -173,3 +173,39 @@ def test_system_status_page_and_api(client):
     assert data["sensor_health"]["latest"]["mv"] == 4170
     assert data["sensor_health"]["latest"]["volts"] == 4.17
     assert data["sensor_health"]["series"]["temp_f"] == [54.1]
+
+
+def test_roostercam_archive_dedup_pruning_and_api(client, monkeypatch):
+    from app import rooster_archive
+
+    monkeypatch.setattr(config, "ROOSTER_ARCHIVE_MAX", 3)
+    config.ROOSTER_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Incomplete JPEG (no EOI marker) is ignored
+    config.ROOSTER_IMAGE.write_bytes(b"\xff\xd8partial")
+    assert client.get("/api/v1/roostercam/frames").json()["frames"] == []
+
+    # Valid JPEG is archived once; identical re-check does not duplicate
+    config.ROOSTER_IMAGE.write_bytes(b"\xff\xd8frame1\xff\xd9")
+    frames = client.get("/api/v1/roostercam/frames").json()["frames"]
+    assert len(frames) == 1
+    assert rooster_archive.snapshot_if_new() is False
+
+    # Serve archived frame and reject path traversal
+    res = client.get(frames[0]["url"])
+    assert res.status_code == 200 and res.content == b"\xff\xd8frame1\xff\xd9"
+    assert client.get("/api/v1/roostercam/frames/../test.db").status_code == 404
+    assert client.get("/api/v1/roostercam/frames/bogus.jpg").status_code == 404
+
+    # Adding 3 more unique frames prunes oldest so only ROOSTER_ARCHIVE_MAX (3) remain
+    for n in (2, 3, 4):
+        config.ROOSTER_IMAGE.write_bytes(f"\xff\xd8frame{n}\xff\xd9".encode("latin1"))
+        assert rooster_archive.snapshot_if_new() is True
+
+    frames = client.get("/api/v1/roostercam/frames").json()["frames"]
+    assert len(frames) == 3
+    assert [client.get(f["url"]).content for f in frames] == [
+        b"\xff\xd8frame2\xff\xd9",
+        b"\xff\xd8frame3\xff\xd9",
+        b"\xff\xd8frame4\xff\xd9",
+    ]

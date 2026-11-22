@@ -1,5 +1,6 @@
 """Test setup: point the app at a throwaway data directory *before* it is imported."""
 import os
+import shutil
 import tempfile
 from pathlib import Path
 
@@ -22,6 +23,10 @@ def fresh_db():
             p.unlink()
     if config.STATUS_FILE.exists():
         config.STATUS_FILE.unlink()
+    if config.ROOSTER_ARCHIVE_DIR.exists():
+        shutil.rmtree(config.ROOSTER_ARCHIVE_DIR)
+    if config.ROOSTER_IMAGE.exists():
+        config.ROOSTER_IMAGE.unlink()
     db.init_db()
     yield
 

@@ -7,12 +7,14 @@ from typing import Awaitable, Callable
 
 import httpx
 
+from .. import rooster_archive
 from . import nws, openmeteo, tides
 
 log = logging.getLogger("collectors")
 
 # (name, function, interval seconds)
 JOBS: list[tuple[str, Callable[[httpx.AsyncClient], Awaitable[int]], int]] = [
+    ("roostercam", rooster_archive.collect, 30),
     ("nws", nws.collect, 600),
     ("st_helens_model", openmeteo.collect_st_helens_current, 600),
     ("openmeteo", openmeteo.collect, 3600),
@@ -26,7 +28,8 @@ async def _run_job(name, fn, interval, client: httpx.AsyncClient) -> None:
     while True:
         try:
             count = await fn(client)
-            log.info("%s: %d new rows", name, count)
+            if count > 0 or name != "roostercam":
+                log.info("%s: %d new rows", name, count)
             failures = 0
             delay = interval
         except asyncio.CancelledError:

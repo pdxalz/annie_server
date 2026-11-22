@@ -12,6 +12,8 @@ STATUS_FILE = DATA_DIR / "site_status.json"
 # Stardot camera images, uploaded by the vsftpd container
 ROOSTER_DIR = Path(os.environ.get("ROOSTER_DIR", "/rooster"))
 ROOSTER_IMAGE = ROOSTER_DIR / "camera0.jpg"
+ROOSTER_ARCHIVE_DIR = DATA_DIR / "rooster_archive"
+ROOSTER_ARCHIVE_MAX = int(os.environ.get("ROOSTER_ARCHIVE_MAX", "60"))
 
 # Static site
 WEB_DIR = Path(os.environ.get("WEB_DIR", Path(__file__).resolve().parent.parent / "web"))

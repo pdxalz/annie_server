@@ -8,8 +8,9 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import FileResponse
 
-from .. import config, db, status
+from .. import config, db, rooster_archive, status
 
 router = APIRouter(prefix="/api/v1")
 _STARTED_UTC = db.now_epoch()
@@ -291,3 +292,17 @@ def get_system_status(hours: int = Query(24, ge=1, le=168)):
             },
         },
     }
+
+
+@router.get("/roostercam/frames")
+def get_roostercam_frames():
+    """List archived RoosterCam frames (oldest -> newest)."""
+    return {"frames": rooster_archive.list_frames()}
+
+
+@router.get("/roostercam/frames/{frame_id}")
+def get_roostercam_frame(frame_id: str):
+    path = rooster_archive.get_frame_path(frame_id)
+    if path is None:
+        raise HTTPException(404, "frame not found")
+    return FileResponse(path, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=86400, immutable"})
