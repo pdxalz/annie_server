@@ -31,13 +31,28 @@ def test_malformed_messages_do_not_raise():
         assert conn.execute("SELECT COUNT(*) FROM observations").fetchone()[0] == 0
 
 
-def test_health_message_stores_latest_sample():
-    payload = json.dumps({"pwr": [[4170, 54.1], [4165, 53.3]]}).encode()
+def test_health_message_stores_all_12_hourly_samples():
+    pairs = [[4200 - i * 10, round(60.0 - i * 0.5, 1)] for i in range(12)]
+    payload = json.dumps({"pwr": pairs}).encode()
     assert mqtt_sub.handle_health_payload(payload) is True
     with db.connect() as conn:
-        rows = conn.execute("SELECT mv, temp_f FROM sensor_health").fetchall()
-    assert len(rows) == 1
-    assert (rows[0]["mv"], rows[0]["temp_f"]) == (4170, 54.1)
+        rows = conn.execute("SELECT ts_utc, mv, temp_f FROM sensor_health ORDER BY ts_utc DESC").fetchall()
+    assert len(rows) == 12
+    assert (rows[0]["mv"], rows[0]["temp_f"]) == (4200, 60.0)
+    assert (rows[11]["mv"], rows[11]["temp_f"]) == (4090, 54.5)
+    assert rows[0]["ts_utc"] - rows[1]["ts_utc"] == 3600
+    assert rows[0]["ts_utc"] - rows[11]["ts_utc"] == 11 * 3600
+    # Replaying the same retained message on reconnect does not add duplicates
+    assert mqtt_sub.handle_health_payload(payload, retained=True) is False
+
+
+def test_health_message_skips_zero_mv_slots():
+    payload = json.dumps({"pwr": [[4170, 54.1], [0, 0.0], [4150, 52.0]]}).encode()
+    assert mqtt_sub.handle_health_payload(payload) is True
+    with db.connect() as conn:
+        rows = conn.execute("SELECT ts_utc, mv, temp_f FROM sensor_health ORDER BY ts_utc DESC").fetchall()
+    assert [(r["mv"], r["temp_f"]) for r in rows] == [(4170, 54.1), (4150, 52.0)]
+    assert rows[0]["ts_utc"] - rows[1]["ts_utc"] == 2 * 3600
 
 
 def test_malformed_health_messages_do_not_raise():

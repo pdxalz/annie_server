@@ -35,28 +35,47 @@ def handle_wind_payload(payload: bytes) -> bool:
     return stored
 
 
-def handle_health_payload(payload: bytes) -> bool:
-    """Parse one Annie health message and store the newest [mV, temp_f] sample.
+def handle_health_payload(payload: bytes, retained: bool = False) -> bool:
+    """Parse one Annie health message and store all valid [mV, temp_f] hourly samples.
 
-    Payload: {"pwr": [[4170, 54.1], ...]} where index 0 is the latest reading.
+    Payload: {"pwr": [[4170, 54.1], ...]} where index 0 is the latest hour and
+    index k is k hours earlier (12-hour ring buffer from health.c).
     """
     try:
         msg = json.loads(payload)
         pwr = msg["pwr"]
         if not isinstance(pwr, list) or not pwr:
             raise ValueError("empty pwr list")
-        mv = int(pwr[0][0])
-        temp_f = float(pwr[0][1])
-        if mv <= 0:
-            raise ValueError(f"invalid mv {mv}")
+        samples: list[tuple[int, int, float]] = []
+        for idx, pair in enumerate(pwr):
+            mv = int(pair[0])
+            temp_f = float(pair[1])
+            if mv > 0:
+                samples.append((idx, mv, temp_f))
+        if not samples:
+            raise ValueError("no valid mv samples")
     except (ValueError, KeyError, TypeError, IndexError) as exc:
         log.warning("Ignoring malformed health message %r: %s", payload[:200], exc)
         return False
 
-    stored = db.insert_sensor_health(db.now_epoch(), mv, temp_f)
+    _, latest_mv, latest_temp = samples[0]
+    if retained:
+        with db.connect() as conn:
+            row = conn.execute(
+                "SELECT mv, temp_f FROM sensor_health ORDER BY ts_utc DESC LIMIT 1"
+            ).fetchone()
+        if row is not None and row["mv"] == latest_mv and row["temp_f"] == latest_temp:
+            return False
+
+    base_ts = (db.now_epoch() // 3600) * 3600
+    stored = 0
+    for idx, mv, temp_f in samples:
+        if db.insert_sensor_health(base_ts - idx * 3600, mv, temp_f):
+            stored += 1
+
     if stored:
-        log.info("Annie health: %d mV, %.1f F", mv, temp_f)
-    return stored
+        log.info("Annie health: %d mV, %.1f F (%d new hourly rows)", latest_mv, latest_temp, stored)
+    return stored > 0
 
 
 _client = None
@@ -89,7 +108,7 @@ def start() -> Optional[object]:
             if message.topic == config.TOPIC_WIND:
                 handle_wind_payload(message.payload)
             elif message.topic == config.TOPIC_HEALTH:
-                handle_health_payload(message.payload)
+                handle_health_payload(message.payload, retained=bool(message.retain))
         except Exception:  # never let a bad message kill the network thread
             log.exception("Failed to store MQTT message on %s", message.topic)
 
